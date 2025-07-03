@@ -1,4 +1,5 @@
 import nx from '@nx/eslint-plugin';
+
 import baseConfig from '../../eslint.config.mjs';
 
 export default [
@@ -12,23 +13,23 @@ export default [
         'error',
         {
           type: 'attribute',
-          prefix: 'app',
-          style: 'camelCase',
-        },
+          prefix: 'kl',
+          style: 'camelCase'
+        }
       ],
       '@angular-eslint/component-selector': [
         'error',
         {
           type: 'element',
-          prefix: 'app',
-          style: 'kebab-case',
-        },
-      ],
-    },
+          prefix: 'kl',
+          style: 'kebab-case'
+        }
+      ]
+    }
   },
   {
     files: ['**/*.html'],
     // Override or add rules here
-    rules: {},
-  },
+    rules: {}
+  }
 ];

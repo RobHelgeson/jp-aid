@@ -1,3 +1,7 @@
 {
-  "singleQuote": true
+  "bracketSpacing": false,
+  "printWidth": 140,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "arrowParens": "avoid"
 }
