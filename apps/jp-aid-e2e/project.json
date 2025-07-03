@@ -1,0 +1,9 @@
+{
+  "name": "jp-aid-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/jp-aid-e2e/src",
+  "implicitDependencies": ["jp-aid"],
+  "// targets": "to see all targets run: nx show project jp-aid-e2e --web",
+  "targets": {}
+}
