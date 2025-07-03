@@ -1,5 +1,7 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
+.env
+
 # compiled output
 dist
 tmp
@@ -44,3 +46,6 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 
 .angular
+
+
+storybook-static
