@@ -1,6 +1,13 @@
 .kanji-card {
-  transition: box-shadow 0.2s, background 0.2s, border 0.2s;
+  transition:
+    box-shadow 0.2s,
+    background 0.2s,
+    border 0.2s;
   cursor: pointer;
+
+  mat-card-header {
+    align-self: center;
+  }
 
   &:hover {
     background: var(--mat-sys-surface-container-high);

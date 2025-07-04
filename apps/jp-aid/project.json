@@ -12,7 +12,7 @@
       "options": {
         "outputPath": "dist/apps/jp-aid",
         "browser": "apps/jp-aid/src/main.ts",
-        "polyfills": ["zone.js"],
+        "polyfills": [],
         "tsConfig": "apps/jp-aid/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [

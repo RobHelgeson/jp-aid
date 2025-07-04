@@ -1,7 +1,7 @@
 # Coding Standards
 
 1. **Context7 First**
-   - Before starting any work, always use Context7 to gather context about the technologies, libraries, and frameworks involved in the task. This ensures you have up-to-date, relevant information and best practices.
+   - Before starting any work, always use the Context7 mcp server to gather context about the technologies, libraries, and frameworks involved in the task. This ensures you have up-to-date, relevant information and best practices.
    - Example: Use Context7 to review docs or API usage before implementing or modifying code.
 
 2. **Use `npx` for Commands**
@@ -27,6 +27,12 @@
 7. **Angular preferences**
    - do not put components into a folder 'components', instead create folders for components directly in the 'app' folder.
    - use the prefix 'kl-' for this project's components not 'app-'
+   - use OnPush change detection unless default is REALLY needed
+   - use new angular template control flow @if @for, NOT ngIf ngFor and the like
+
+8. **Templates**
+   - for properties on template elements, order properties thus: ids first, class props, inputs, then finally outputs
+   - Example: <button #myButton mat-button class="back-button" [text]="textValue" (click)="goBackToSearch()">
 
 # Additional Coding Standards (Architecture-Driven)
 

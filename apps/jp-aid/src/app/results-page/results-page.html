@@ -1,0 +1,27 @@
+<div class="results-page-container" [@slideUpIn]>
+  <!-- Loading Spinner -->
+  @if (isLoading()) {
+  <kl-loading-spinner message="Searching for kanji..."> </kl-loading-spinner>
+  } @else {
+  <!-- Results Content -->
+  <div class="results-content">
+    <header class="results-header">
+      <h1 class="results-title">Search Results for "{{ searchQuery }}"</h1>
+      <button mat-button class="back-button" (click)="goBackToSearch()">← New Search</button>
+    </header>
+
+    <!-- Kanji Results -->
+    @if (hasResults) {
+    <div class="results-section">
+      <kl-kanji-results [search_text]="searchQuery"></kl-kanji-results>
+    </div>
+    } @else {
+    <!-- No Results -->
+    <div class="no-results">
+      <p>No kanji found for your search.</p>
+      <button mat-raised-button color="primary" (click)="goBackToSearch()">Try Another Search</button>
+    </div>
+    }
+  </div>
+  }
+</div>

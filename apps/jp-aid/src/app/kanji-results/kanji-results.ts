@@ -1,5 +1,5 @@
-import {CommonModule} from '@angular/common';
-import {Component, inject, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {NgClass} from '@angular/common';
+import {ChangeDetectionStrategy, Component, inject, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {MatCardModule} from '@angular/material/card';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatPaginatorModule, PageEvent} from '@angular/material/paginator';
@@ -10,9 +10,10 @@ import {MockData} from '../services/mock-data';
 @Component({
   selector: 'kl-kanji-results',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatGridListModule, MatPaginatorModule],
+  imports: [MatCardModule, MatGridListModule, MatPaginatorModule, NgClass],
   templateUrl: './kanji-results.html',
-  styleUrl: './kanji-results.scss'
+  styleUrl: './kanji-results.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KanjiResults implements OnChanges {
   private mockData = inject(MockData);

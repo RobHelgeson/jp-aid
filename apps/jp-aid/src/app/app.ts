@@ -1,17 +1,12 @@
-import {Component} from '@angular/core';
-import {RouterModule} from '@angular/router';
-
-import {KanjiResults} from './kanji-results/kanji-results';
-import {KanjiSearch} from './kanji-search/kanji-search';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
 
 @Component({
   standalone: true,
-  imports: [RouterModule, KanjiSearch, KanjiResults],
+  imports: [RouterOutlet],
   selector: 'kl-root',
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class App {
-  protected title = 'jp-aid';
-  searchText: string = '';
-}
+export class App {}

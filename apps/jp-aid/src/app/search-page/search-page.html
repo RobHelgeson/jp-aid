@@ -1,0 +1,18 @@
+<div class="search-content">
+  <h1>Kanji Deep Dive</h1>
+
+  <form class="search-form" (ngSubmit)="onSearchSubmit()">
+    <mat-form-field class="search-field" appearance="outline">
+      <input
+        matInput
+        class="search-input"
+        [(ngModel)]="searchQuery"
+        name="searchQuery"
+        placeholder="Search for kanji, words, or readings..."
+        autocomplete="off"
+      />
+    </mat-form-field>
+
+    <button class="search-button" mat-raised-button color="primary" type="submit" [disabled]="!searchQuery.trim()">Search</button>
+  </form>
+</div>
