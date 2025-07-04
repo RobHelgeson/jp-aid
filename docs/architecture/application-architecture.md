@@ -23,7 +23,7 @@ apps/jp-aid/src/app/
 
 **State Management:**
 
-For simplicity, initial state management will rely on RxJS-based services. A centralized state store (like NgRx or Akita) will be considered if the application's state complexity grows significantly.
+For simplicity, initial state management will rely on signal based services. A centralized state store (like NgRx or Akita) will be considered if the application's state complexity grows significantly.
 
 **Routing:**
 

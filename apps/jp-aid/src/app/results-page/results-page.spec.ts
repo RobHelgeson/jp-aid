@@ -37,7 +37,7 @@ describe('ResultsPage', () => {
   });
 
   it('should extract search query from route params', () => {
-    expect(component.searchQuery).toBe('test-search');
+    expect(component.searchQuery()).toBe('test-search');
   });
 
   it('should show loading state initially', () => {

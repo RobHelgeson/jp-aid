@@ -21,8 +21,8 @@ export class ResultsPage {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  protected searchQuery = signal<string>('');
-  protected isLoading = signal<boolean>(true);
+  searchQuery = signal<string>('');
+  isLoading = signal<boolean>(true);
   protected hasResults = signal<boolean>(false);
 
   constructor() {

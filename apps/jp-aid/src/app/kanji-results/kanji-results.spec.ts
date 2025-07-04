@@ -22,11 +22,13 @@ describe('KanjiResults', () => {
   });
 
   it('should apply .active class to clicked card', () => {
-    component.paginated_kanji = [
+    component.all_kanji.set([
       {id: '水', meaning: ['water'], on_readings: [], kun_readings: [], stroke_count: 4},
       {id: '火', meaning: ['fire'], on_readings: [], kun_readings: [], stroke_count: 4}
-    ];
+    ]);
     fixture.detectChanges();
+
+    expect(component.paginated_kanji()).toHaveLength(2);
 
     const cards = fixture.debugElement.queryAll(By.css('mat-card'));
     cards[0].nativeElement.click();

@@ -20,7 +20,7 @@ export class KanjiResults {
 
   readonly search_text = input<string>('');
 
-  private all_kanji = signal<Kanji[]>([]);
+  all_kanji = signal<Kanji[]>([]);
   private selectedKanjiId = signal<string | null>(null);
   private pageIndex = signal(0);
   private pageSize = signal(10);
@@ -40,7 +40,7 @@ export class KanjiResults {
     );
   });
 
-  protected paginated_kanji = computed(() => {
+  paginated_kanji = computed(() => {
     const filtered = this.filtered_kanji();
     const startIndex = this.pageIndex() * this.pageSize();
     const endIndex = startIndex + this.pageSize();
