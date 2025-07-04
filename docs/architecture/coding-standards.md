@@ -21,8 +21,12 @@
    - Prefer Angular Material components where applicable. When not applicable, use standard HTML elements and style them appropriately.
 
 6. **SCSS over CSS**
-   - use sass instead of css for angular components.
+   - ALWAYS use sass instead of css for angular components.
    - never use tailwind classes
+
+7. **Angular preferences**
+   - do not put components into a folder 'components', instead create folders for components directly in the 'app' folder.
+   - use the prefix 'kl-' for this project's components not 'app-'
 
 # Additional Coding Standards (Architecture-Driven)
 

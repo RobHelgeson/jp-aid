@@ -1,0 +1,15 @@
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$violet-palette,
+        secondary: mat.$blue-palette
+      ),
+      typography: 'Noto Sans JP',
+      density: 0
+    )
+  );
+}

@@ -12,9 +12,8 @@ Components will be organized by feature. Reusable, "dumb" components (e.g., cust
 
 ```text
 apps/jp-aid/src/app/
-├── components/
-│   ├── kanji-search/
-│   └── kanji-detail-view/
+├── kanji-search/
+├── kanji-detail-view/
 ├── services/
 │   ├── api.service.ts      # Handles all HTTP communication
 │   └── auth.service.ts     # Manages user authentication state

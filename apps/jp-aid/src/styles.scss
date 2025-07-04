@@ -1,1 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+@use '@angular/cdk' as cdk;
+
+html {
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+
+  @include mat.theme(
+    (
+      color: (
+        theme-type: dark,
+        primary: mat.$magenta-palette,
+        secondary: mat.$red-palette
+      ),
+      typography: 'Noto Sans JP',
+      density: 0
+    )
+  );
+
+  @include cdk.a11y-visually-hidden();
+}
