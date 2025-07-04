@@ -1,11 +1,14 @@
 .kanji-card {
+  min-width: 6rem;
+
   transition:
     box-shadow 0.2s,
     background 0.2s,
     border 0.2s;
   cursor: pointer;
 
-  mat-card-header {
+  mat-card-header,
+  mat-card-content {
     align-self: center;
   }
 
