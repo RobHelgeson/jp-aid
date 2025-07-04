@@ -1,5 +1,5 @@
 import {NgClass} from '@angular/common';
-import {ChangeDetectionStrategy, Component, inject, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, signal} from '@angular/core';
 import {MatCardModule} from '@angular/material/card';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatPaginatorModule, PageEvent} from '@angular/material/paginator';
@@ -15,50 +15,52 @@ import {MockData} from '../services/mock-data';
   styleUrl: './kanji-results.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class KanjiResults implements OnChanges {
+export class KanjiResults {
   private mockData = inject(MockData);
 
-  @Input() search_text: string = '';
+  readonly search_text = input<string>('');
 
-  all_kanji: Kanji[] = [];
-  filtered_kanji: Kanji[] = [];
-  paginated_kanji: Kanji[] = [];
-  selectedKanjiId: string | null = null;
+  private all_kanji = signal<Kanji[]>([]);
+  private selectedKanjiId = signal<string | null>(null);
+  private pageIndex = signal(0);
+  private pageSize = signal(10);
+
+  protected filtered_kanji = computed(() => {
+    const searchText = this.search_text();
+    if (!searchText) {
+      return this.all_kanji();
+    }
+
+    return this.all_kanji().filter(
+      kanji =>
+        kanji.id.includes(searchText) ||
+        kanji.meaning.some(meaning => meaning.includes(searchText)) ||
+        kanji.on_readings.some(reading => reading.includes(searchText)) ||
+        kanji.kun_readings.some(reading => reading.includes(searchText))
+    );
+  });
+
+  protected paginated_kanji = computed(() => {
+    const filtered = this.filtered_kanji();
+    const startIndex = this.pageIndex() * this.pageSize();
+    const endIndex = startIndex + this.pageSize();
+    return filtered.slice(startIndex, endIndex);
+  });
 
   constructor() {
-    this.all_kanji = this.mockData.getKanji();
-    this.filtered_kanji = this.all_kanji;
-    this.paginated_kanji = this.filtered_kanji.slice(0, 10);
+    this.all_kanji.set(this.mockData.getKanji());
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['search_text']) {
-      this.filterKanji();
-    }
+  protected onPageChange(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
   }
 
-  filterKanji(): void {
-    this.filtered_kanji = this.all_kanji.filter(
-      kanji =>
-        kanji.id.includes(this.search_text) ||
-        kanji.meaning.some(meaning => meaning.includes(this.search_text)) ||
-        kanji.on_readings.some(reading => reading.includes(this.search_text)) ||
-        kanji.kun_readings.some(reading => reading.includes(this.search_text))
-    );
-    this.paginated_kanji = this.filtered_kanji.slice(0, 10);
+  protected selectKanji(kanjiId: string): void {
+    this.selectedKanjiId.set(kanjiId);
   }
 
-  onPageChange(event: PageEvent): void {
-    const start_index = event.pageIndex * event.pageSize;
-    const end_index = start_index + event.pageSize;
-    this.paginated_kanji = this.filtered_kanji.slice(start_index, end_index);
-  }
-
-  selectKanji(kanjiId: string): void {
-    this.selectedKanjiId = kanjiId;
-  }
-
-  isSelected(kanjiId: string): boolean {
-    return this.selectedKanjiId === kanjiId;
+  protected isSelected(kanjiId: string): boolean {
+    return this.selectedKanjiId() === kanjiId;
   }
 }

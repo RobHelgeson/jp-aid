@@ -1,3 +1,47 @@
 {
-  "nxConsole.generateAiAgentRules": true
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/node_modules/**": true
+  },
+  "[html]": {
+    "editor.rulers": [140],
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.rulers": [140],
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "jest.runMode": "on-demand",
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "davidanson.vscode-markdownlint"
+  },
+  "nxConsole.generateAiAgentRules": true,
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "typescriptHero.imports.insertSpaceBeforeAndAfterImportBraces": false,
+  "typescriptHero.imports.multiLineTrailingComma": false,
+  "typescriptHero.imports.multiLineWrapThreshold": 140,
+  "typescriptHero.imports.organizeOnSave": true,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
+  "[typescript]": {
+    "editor.rulers": [140],
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "cSpell.words": []
 }

@@ -29,6 +29,7 @@
    - use the prefix 'kl-' for this project's components not 'app-'
    - use OnPush change detection unless default is REALLY needed
    - use new angular template control flow @if @for, NOT ngIf ngFor and the like
+   - use signals
 
 8. **Templates**
    - for properties on template elements, order properties thus: ids first, class props, inputs, then finally outputs

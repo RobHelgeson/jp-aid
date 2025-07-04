@@ -1,17 +1,16 @@
 <mat-grid-list cols="5" rowHeight="200px">
-  @for (kanji of paginated_kanji; track kanji.id) {
-  <mat-grid-tile>
-    <mat-card class="kanji-card" [ngClass]="{'active': isSelected(kanji.id)}" (click)="selectKanji(kanji.id)">
-      <mat-card-header>
-        <mat-card-title>{{ kanji.id }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>{{ kanji.meaning.join(', ') }}</p>
-      </mat-card-content>
-    </mat-card>
-  </mat-grid-tile>
+  @for (kanji of paginated_kanji(); track kanji.id) {
+    <mat-grid-tile>
+      <mat-card class="kanji-card" [ngClass]="{active: isSelected(kanji.id)}" (click)="selectKanji(kanji.id)">
+        <mat-card-header>
+          <mat-card-title>{{ kanji.id }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ kanji.meaning.join(', ') }}</p>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
   }
 </mat-grid-list>
 
-<mat-paginator [length]="filtered_kanji.length" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPageChange($event)">
-</mat-paginator>
+<mat-paginator [length]="filtered_kanji().length" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPageChange($event)" />

@@ -21,15 +21,15 @@ export class ResultsPage {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  searchQuery: string = '';
-  isLoading = signal(true);
-  hasResults: boolean = false;
+  protected searchQuery = signal<string>('');
+  protected isLoading = signal<boolean>(true);
+  protected hasResults = signal<boolean>(false);
 
   constructor() {
     // Extract query parameter from route
     this.route.queryParams.pipe(takeUntilDestroyed()).subscribe(params => {
-      this.searchQuery = params['q'] || '';
-      if (this.searchQuery) {
+      this.searchQuery.set(params['q'] || '');
+      if (this.searchQuery()) {
         this.performSearch();
       } else {
         // If no query, redirect back to search page
@@ -48,7 +48,7 @@ export class ResultsPage {
         delay(1500) // Simulate network delay for demonstration
       )
       .subscribe(() => {
-        this.hasResults = this.searchQuery.trim().length > 0;
+        this.hasResults.set(this.searchQuery().trim().length > 0);
         this.isLoading.set(false);
       });
   }

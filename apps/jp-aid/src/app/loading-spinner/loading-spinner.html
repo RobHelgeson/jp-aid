@@ -1,6 +1,6 @@
 <div class="spinner-container" [@spinnerSlideUp]>
   <div class="spinner-content">
-    <mat-spinner [diameter]="size"> </mat-spinner>
-    <p>{{ message }}</p>
+    <mat-spinner [diameter]="size()" />
+    <p>{{ message() }}</p>
   </div>
 </div>

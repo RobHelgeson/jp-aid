@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, input} from '@angular/core';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 import {spinnerSlideUp} from '../animations/page-transitions';
@@ -13,6 +13,6 @@ import {spinnerSlideUp} from '../animations/page-transitions';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoadingSpinner {
-  @Input() message: string = 'Loading...';
-  @Input() size: number = 300;
+  readonly message = input<string>('Loading...');
+  readonly size = input<number>(300);
 }
