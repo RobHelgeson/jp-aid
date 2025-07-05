@@ -9,6 +9,18 @@ import {
   radicalNodeFixture
 } from '@jp-aid/shared-interfaces/testing';
 
+const NODE_COLORS = {
+  [NodeType.Kanji]: '#FF5733',    // Orange-Red
+  [NodeType.Radical]: '#33FF57',  // Green
+  [NodeType.Primitive]: '#3357FF' // Blue
+};
+
+const EDGE_COLORS = {
+  'has radical': '#888888', // Grey
+  'has primitive': '#AAAAAA', // Light Grey
+  'related': '#CCCCCC'    // Very Light Grey
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -44,7 +56,7 @@ export class MockData {
       0,
       0,
       20,
-      '#FF0000',
+      NODE_COLORS[NodeType.Kanji],
       NodeType.Kanji,
       kanji.meaning.join(', '),
       kanji.onReadings,
@@ -54,18 +66,18 @@ export class MockData {
     nodes.push(kanjiNode);
 
     // Mock radicals
-    const radical1: RadicalNode = radicalNodeFixture('言', '言', -1, 1, 10, '#00FF00', NodeType.Radical, 7, ['speech']);
+    const radical1: RadicalNode = radicalNodeFixture('言', '言', -1, 1, 10, NODE_COLORS[NodeType.Radical], NodeType.Radical, 7, ['speech']);
     nodes.push(radical1);
-    edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, '#0000FF', 'has radical'));
+    edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, EDGE_COLORS['has radical'], 'has radical'));
 
     // Mock primitives
-    const primitive1: PrimitiveNode = primitiveNodeFixture('五', '五', 1, 1, 10, '#FFFF00', NodeType.Primitive, 'five');
+    const primitive1: PrimitiveNode = primitiveNodeFixture('五', '五', 1, 1, 10, NODE_COLORS[NodeType.Primitive], NodeType.Primitive, 'five');
     nodes.push(primitive1);
-    edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, '#0000FF', 'has primitive'));
+    edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
 
-    const primitive2: PrimitiveNode = primitiveNodeFixture('口', '口', 1, -1, 10, '#FFFF00', NodeType.Primitive, 'mouth');
+    const primitive2: PrimitiveNode = primitiveNodeFixture('口', '口', 1, -1, 10, NODE_COLORS[NodeType.Primitive], NodeType.Primitive, 'mouth');
     nodes.push(primitive2);
-    edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, '#0000FF', 'has primitive'));
+    edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
 
     // Mock related Kanji
     const relatedKanji1 = this.getKanji().find(k => k.id === '日');
@@ -76,7 +88,7 @@ export class MockData {
         -2,
         0,
         15,
-        '#FF0000',
+        NODE_COLORS[NodeType.Kanji],
         NodeType.Kanji,
         relatedKanji1.meaning.join(', '),
         relatedKanji1.onReadings,
@@ -84,7 +96,7 @@ export class MockData {
         relatedKanji1.strokeCount
       );
       nodes.push(relatedKanjiNode1);
-      edges.push(graphEdgeFixture(kanji.id, relatedKanjiNode1.id, 2, '#0000FF', 'related'));
+      edges.push(graphEdgeFixture(kanji.id, relatedKanjiNode1.id, 2, EDGE_COLORS['related'], 'related'));
     }
 
     return {nodes, edges};

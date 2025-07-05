@@ -22,3 +22,8 @@ html {
 
   @include cdk.a11y-visually-hidden();
 }
+
+body {
+  margin: 0.5rem;
+  height: calc(100dvh - 1rem);
+}

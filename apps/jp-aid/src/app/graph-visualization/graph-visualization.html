@@ -1,1 +1,14 @@
-<div #graphContainer></div>
+<div class="graph-container">
+  <div #graphContainer class="graph-canvas"></div>
+  <div class="graph-controls">
+    <button mat-icon-button (click)="zoomIn()" aria-label="Zoom In">
+      <mat-icon>zoom_in</mat-icon>
+    </button>
+    <button mat-icon-button (click)="zoomOut()" aria-label="Zoom Out">
+      <mat-icon>zoom_out</mat-icon>
+    </button>
+    <button mat-icon-button (click)="resetGraph()" aria-label="Reset Graph View">
+      <mat-icon>center_focus_strong</mat-icon>
+    </button>
+  </div>
+</div>
