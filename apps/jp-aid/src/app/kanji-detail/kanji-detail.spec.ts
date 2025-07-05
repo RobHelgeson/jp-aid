@@ -97,7 +97,7 @@ describe('KanjiDetail', () => {
   });
 
   it('should navigate back to search when goBack is called', () => {
-    const backButton = fixture.nativeElement.querySelector('button[aria-label="Back to results"]');
+    const backButton = fixture.nativeElement.querySelector('button[aria-label="Return to results"]');
     backButton.click();
 
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/search'], {queryParams: {q: 'water'}});
@@ -125,5 +125,57 @@ describe('KanjiDetail', () => {
 
     const meanings = compiled.querySelectorAll('.meanings-section mat-chip');
     expect(meanings[0]?.textContent).toContain('fire');
+  });
+
+  describe('Return Navigation Tests', () => {
+    it('should render return button with correct text and accessibility attributes', () => {
+      const returnButton = fixture.nativeElement.querySelector('button[aria-label="Return to results"]');
+
+      expect(returnButton).toBeTruthy();
+      expect(returnButton.textContent).toContain('Return to Results');
+      expect(returnButton.getAttribute('aria-label')).toBe('Return to results');
+    });
+
+    it('should preserve search query when navigating back to results', () => {
+      // Set different query parameter
+      queryParamsSubject.next({q: 'fire'});
+      fixture.detectChanges();
+
+      const returnButton = fixture.nativeElement.querySelector('button[aria-label="Return to results"]');
+      returnButton.click();
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/search'], {queryParams: {q: 'fire'}});
+    });
+
+    it('should handle empty search query when navigating back', () => {
+      // Set empty query parameter
+      queryParamsSubject.next({});
+      fixture.detectChanges();
+
+      const returnButton = fixture.nativeElement.querySelector('button[aria-label="Return to results"]');
+      returnButton.click();
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/search'], {queryParams: {q: ''}});
+    });
+
+    it('should handle direct URL access with no previous search state', () => {
+      // Simulate direct URL access with no query params
+      queryParamsSubject.next({});
+      fixture.detectChanges();
+
+      expect(component['searchQuery']()).toBe('');
+
+      const returnButton = fixture.nativeElement.querySelector('button[aria-label="Return to results"]');
+      expect(returnButton).toBeTruthy();
+    });
+
+    it('should trigger change detection when return button is clicked', () => {
+      const returnButton = fixture.nativeElement.querySelector('button[aria-label="Return to results"]');
+
+      returnButton.click();
+      fixture.detectChanges();
+
+      expect(mockRouter.navigate).toHaveBeenCalled();
+    });
   });
 });
