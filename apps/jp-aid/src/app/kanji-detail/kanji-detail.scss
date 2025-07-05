@@ -1,7 +1,7 @@
 @use 'constants' as constants;
 
 .kanji-detail-container {
-  max-width: 50rem;
+  max-width: 75rem;
   margin: 0 auto;
   padding: 1.5rem;
 
@@ -22,29 +22,141 @@
     }
   }
 
-  .kanji-card {
-    .kanji-character {
-      font-size: 4rem;
-      line-height: 1;
-      font-weight: 400;
-      text-align: center;
-      margin-bottom: 0.5rem;
+  .kanji-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+
+    @media (max-width: constants.$small-breakpoint-width) {
+      grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
-    mat-card-subtitle {
-      text-align: center;
-      font-size: 1.1rem;
+    .kanji-info-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+
+      .kanji-display-card {
+        .kanji-display-title {
+          font-size: 2rem;
+          text-align: center;
+          margin-bottom: 0.5rem;
+        }
+
+        mat-card-subtitle {
+          text-align: center;
+          font-size: 1.1rem;
+        }
+
+        .kanji-fonts-display {
+          display: flex;
+          justify-content: space-around;
+          gap: 1rem;
+          margin-top: 1.5rem;
+
+          @media (max-width: constants.$small-breakpoint-width) {
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+          }
+
+          .font-rendering {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+
+            .kanji-character {
+              font-size: 6rem;
+              line-height: 1;
+              font-weight: 400;
+              display: block;
+
+              @media (max-width: constants.$small-breakpoint-width) {
+                font-size: 4rem;
+              }
+            }
+
+            .font-label {
+              font-size: 0.75rem;
+              color: var(--mat-sys-secondary);
+              text-transform: uppercase;
+              letter-spacing: 0.1em;
+            }
+
+            &.serif-font .kanji-character {
+              font-family: 'Noto Serif JP', serif;
+            }
+
+            &.sans-font .kanji-character {
+              font-family: 'Noto Sans JP', sans-serif;
+            }
+
+            &.handwritten-font .kanji-character {
+              font-family: 'Yuji Boku', cursive;
+            }
+          }
+        }
+      }
+
+      .kanji-data-card {
+        .meanings-section,
+        .readings-section,
+        .example-words-section {
+          margin-bottom: 1.5rem;
+
+          h3 {
+            color: var(--mat-sys-primary);
+            margin-bottom: 0.75rem;
+          }
+        }
+
+        .example-words {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+
+          .example-word {
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem;
+            border: 1px solid var(--mat-sys-outline-variant);
+            border-radius: 0.5rem;
+            background: var(--mat-sys-surface-variant);
+
+            .word-kanji {
+              font-size: 1.25rem;
+              font-weight: 500;
+              font-family: 'Noto Serif JP', serif;
+              margin-bottom: 0.25rem;
+            }
+
+            .word-reading {
+              font-size: 0.9rem;
+              color: var(--mat-sys-secondary);
+              margin-bottom: 0.25rem;
+            }
+
+            .word-meaning {
+              font-size: 0.9rem;
+              color: var(--mat-sys-on-surface);
+            }
+          }
+        }
+      }
     }
 
-    .kanji-info {
-      margin-top: 1.5rem;
+    .graph-column {
+      .graph-placeholder {
+        height: 20rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-      .meanings-section,
-      .readings-section {
-        margin-bottom: 1.5rem;
-
-        h3 {
-          color: var(--mat-sys-primary);
+        mat-card-content {
+          text-align: center;
+          color: var(--mat-sys-secondary);
         }
       }
     }

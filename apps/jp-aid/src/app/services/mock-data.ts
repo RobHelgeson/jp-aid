@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Kanji, kanjiFixture} from '@jp-aid/shared-interfaces';
+import {ExampleWord, Kanji, kanjiFixture} from '@jp-aid/shared-interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -60,4 +60,36 @@ export class MockData {
     kanjiFixture('鸛', ['stork'], ['カン'], ['コウノトリ'], 24),
     kanjiFixture('鸞', ['phoenix'], ['ラン'], [], 30)
   ];
+
+  /**
+   * Get example words for a specific kanji character
+   * @param kanjiId The kanji character to get examples for
+   * @returns Array of example words containing the kanji
+   */
+  getExampleWords(kanjiId: string): ExampleWord[] {
+    const exampleWordsMap: Record<string, ExampleWord[]> = {
+      語: [
+        {kanji: '日本語', reading: 'にほんご', meaning: 'Japanese language'},
+        {kanji: '英語', reading: 'えいご', meaning: 'English language'},
+        {kanji: '物語', reading: 'ものがたり', meaning: 'story'}
+      ],
+      日: [
+        {kanji: '今日', reading: 'きょう', meaning: 'today'},
+        {kanji: '日本', reading: 'にっぽん', meaning: 'Japan'},
+        {kanji: '毎日', reading: 'まいにち', meaning: 'every day'}
+      ],
+      本: [
+        {kanji: '日本', reading: 'にっぽん', meaning: 'Japan'},
+        {kanji: '本当', reading: 'ほんとう', meaning: 'really'},
+        {kanji: '教科書', reading: 'きょうかしょ', meaning: 'textbook'}
+      ],
+      水: [
+        {kanji: '水曜日', reading: 'すいようび', meaning: 'Wednesday'},
+        {kanji: '飲み物', reading: 'のみもの', meaning: 'beverage'},
+        {kanji: '水道', reading: 'すいどう', meaning: 'water supply'}
+      ]
+    };
+
+    return exampleWordsMap[kanjiId] || [];
+  }
 }

@@ -244,7 +244,7 @@ graph TD
     - **Text:** Dark Gray (`#212121`)
     - **Accents:** Blue (`#2196F3`), Red (`#EF5350`)
 - **Typography:** (TODO: Final fonts to be handpicked later)
-  - **Default UI (Sans-Serif):** `Roboto`
+  - **Default UI (Sans-Serif):** `Noto Sans JP`
   - **Default Kanji (Serif):** `Noto Serif JP`
-  - **Default Kanji (Handwritten):** `Yuji Syuku`
+  - **Default Kanji (Handwritten):** `Yuji Boku`
 - **Iconography:** `Material Icons` will be used for all UI controls.

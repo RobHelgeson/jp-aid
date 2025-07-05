@@ -12,7 +12,7 @@ describe('KanjiDetail', () => {
   let fixture: ComponentFixture<KanjiDetail>;
   let mockActivatedRoute: {params: Observable<Params>; queryParams: Observable<Params>};
   let mockRouter: {navigate: jest.Mock};
-  let mockData: {getKanji: jest.Mock};
+  let mockData: {getKanji: jest.Mock; getExampleWords: jest.Mock};
   let paramsSubject: BehaviorSubject<Kanji>;
   let queryParamsSubject: BehaviorSubject<Params>;
 
@@ -28,7 +28,8 @@ describe('KanjiDetail', () => {
       navigate: jest.fn()
     };
     mockData = {
-      getKanji: jest.fn()
+      getKanji: jest.fn(),
+      getExampleWords: jest.fn()
     };
 
     // Setup mock data
@@ -36,6 +37,23 @@ describe('KanjiDetail', () => {
       kanjiFixture('水', ['water'], ['スイ'], ['みず'], 4),
       kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4)
     ]);
+
+    // Setup example words mock
+    mockData.getExampleWords.mockImplementation((kanjiId: string) => {
+      const exampleWordsMap: Record<string, Array<{kanji: string; reading: string; meaning: string}>> = {
+        水: [
+          {kanji: '水曜日', reading: 'すいようび', meaning: 'Wednesday'},
+          {kanji: '飲み物', reading: 'のみもの', meaning: 'beverage'},
+          {kanji: '水道', reading: 'すいどう', meaning: 'water supply'}
+        ],
+        火: [
+          {kanji: '火曜日', reading: 'かようび', meaning: 'Tuesday'},
+          {kanji: '火事', reading: 'かじ', meaning: 'fire'},
+          {kanji: '花火', reading: 'はなび', meaning: 'fireworks'}
+        ]
+      };
+      return exampleWordsMap[kanjiId] || [];
+    });
 
     await TestBed.configureTestingModule({
       imports: [KanjiDetail, NoopAnimationsModule],
@@ -62,12 +80,8 @@ describe('KanjiDetail', () => {
   it('should display kanji information when kanji is found', () => {
     const compiled = fixture.nativeElement;
 
-    // Check if kanji character is displayed
-    const kanjiCharacter = compiled.querySelector('.kanji-character');
-    expect(kanjiCharacter?.textContent).toContain('水');
-
-    // Check if stroke count is displayed
-    const subtitle = compiled.querySelector('mat-card-subtitle');
+    // Check if stroke count is displayed in the display card title
+    const subtitle = compiled.querySelector('.kanji-display-card mat-card-subtitle');
     expect(subtitle?.textContent).toContain('4 strokes');
 
     // Check if meanings are displayed
@@ -120,11 +134,149 @@ describe('KanjiDetail', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement;
-    const kanjiCharacter = compiled.querySelector('.kanji-character');
-    expect(kanjiCharacter?.textContent).toContain('火');
+    const kanjiCharacters = compiled.querySelectorAll('.kanji-character');
+    // Should have 3 font renderings
+    expect(kanjiCharacters.length).toBe(3);
+    kanjiCharacters.forEach((char: HTMLElement) => {
+      expect(char.textContent).toContain('火');
+    });
 
     const meanings = compiled.querySelectorAll('.meanings-section mat-chip');
     expect(meanings[0]?.textContent).toContain('fire');
+  });
+
+  describe('Enhanced Display Features', () => {
+    it('should display kanji prominently in multiple font renderings', () => {
+      const compiled = fixture.nativeElement;
+
+      // Check for three font renderings
+      const fontRenderings = compiled.querySelectorAll('.font-rendering');
+      expect(fontRenderings.length).toBe(3);
+
+      // Check serif font rendering
+      const serifFontRendering = compiled.querySelector('.serif-font .kanji-character');
+      expect(serifFontRendering).toBeTruthy();
+      expect(serifFontRendering?.textContent).toContain('水');
+
+      // Check sans font rendering
+      const sansFontRendering = compiled.querySelector('.sans-font .kanji-character');
+      expect(sansFontRendering).toBeTruthy();
+      expect(sansFontRendering?.textContent).toContain('水');
+
+      // Check handwritten font rendering
+      const handwrittenFontRendering = compiled.querySelector('.handwritten-font .kanji-character');
+      expect(handwrittenFontRendering).toBeTruthy();
+      expect(handwrittenFontRendering?.textContent).toContain('水');
+    });
+
+    it('should display font labels for each rendering', () => {
+      const compiled = fixture.nativeElement;
+
+      const fontLabels = compiled.querySelectorAll('.font-label');
+      expect(fontLabels.length).toBe(3);
+
+      expect(fontLabels[0]?.textContent).toContain('Serif');
+      expect(fontLabels[1]?.textContent).toContain('Sans');
+      expect(fontLabels[2]?.textContent).toContain('Handwritten');
+    });
+
+    it('should display example words when available', () => {
+      const compiled = fixture.nativeElement;
+
+      const exampleWordsSection = compiled.querySelector('.example-words-section');
+      expect(exampleWordsSection).toBeTruthy();
+
+      const exampleWords = compiled.querySelectorAll('.example-word');
+      expect(exampleWords.length).toBeGreaterThan(0);
+
+      // Check first example word structure
+      const firstWord = exampleWords[0];
+      expect(firstWord.querySelector('.word-kanji')).toBeTruthy();
+      expect(firstWord.querySelector('.word-reading')).toBeTruthy();
+      expect(firstWord.querySelector('.word-meaning')).toBeTruthy();
+    });
+
+    it('should implement responsive two-column layout', () => {
+      const compiled = fixture.nativeElement;
+
+      // Check for layout structure
+      const kanjiLayout = compiled.querySelector('.kanji-layout');
+      expect(kanjiLayout).toBeTruthy();
+
+      const infoColumn = compiled.querySelector('.kanji-info-column');
+      expect(infoColumn).toBeTruthy();
+
+      const graphColumn = compiled.querySelector('.graph-column');
+      expect(graphColumn).toBeTruthy();
+
+      // Check that both display and data cards are present
+      const displayCard = compiled.querySelector('.kanji-display-card');
+      expect(displayCard).toBeTruthy();
+
+      const dataCard = compiled.querySelector('.kanji-data-card');
+      expect(dataCard).toBeTruthy();
+    });
+
+    it('should maintain accessibility attributes and semantic HTML', () => {
+      const compiled = fixture.nativeElement;
+
+      // Check for proper heading structure
+      const headings = compiled.querySelectorAll('h3');
+      expect(headings.length).toBeGreaterThan(0);
+
+      // Check that font renderings have descriptive labels
+      const fontLabels = compiled.querySelectorAll('.font-label');
+      fontLabels.forEach((label: HTMLElement) => {
+        expect(label.textContent?.trim()).toBeTruthy();
+      });
+
+      // Check for proper card structure
+      const cards = compiled.querySelectorAll('mat-card');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    it('should display graph placeholder in right column', () => {
+      const compiled = fixture.nativeElement;
+
+      const graphPlaceholder = compiled.querySelector('.graph-placeholder');
+      expect(graphPlaceholder).toBeTruthy();
+
+      const placeholderText = graphPlaceholder?.textContent;
+      expect(placeholderText).toContain('Interactive graph visualization coming soon');
+    });
+
+    it('should handle kanji without example words gracefully', () => {
+      // Update mock data to include the test kanji
+      mockData.getKanji.mockReturnValue([
+        kanjiFixture('水', ['water'], ['スイ'], ['みず'], 4),
+        kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4),
+        kanjiFixture('虎', ['tiger'], ['コウ'], ['トラ'], 8)
+      ]);
+
+      // Change to a kanji that doesn't have example words in our mock data
+      paramsSubject.next(kanjiFixture('虎', ['tiger'], ['コウ'], ['トラ'], 8));
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      const exampleWords = compiled.querySelectorAll('.example-word');
+      // Should show 0 example words but section should still exist
+      expect(exampleWords.length).toBe(0);
+
+      const exampleWordsSection = compiled.querySelector('.example-words-section');
+      expect(exampleWordsSection).toBeTruthy();
+    });
+
+    it('should integrate with existing navigation functionality', () => {
+      const compiled = fixture.nativeElement;
+
+      // Check that return button is still present and functional
+      const returnButton = compiled.querySelector('button[aria-label="Return to results"]');
+      expect(returnButton).toBeTruthy();
+
+      // Ensure new layout doesn't break navigation
+      returnButton?.click();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/search'], {queryParams: {q: 'water'}});
+    });
   });
 
   describe('Return Navigation Tests', () => {

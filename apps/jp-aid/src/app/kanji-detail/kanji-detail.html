@@ -8,43 +8,89 @@
   </div>
 
   @if (kanji(); as kanjiData) {
-    <mat-card class="kanji-card">
-      <mat-card-header>
-        <mat-card-title class="kanji-character">{{ kanjiData.id }}</mat-card-title>
-        <mat-card-subtitle>{{ kanjiData.strokeCount }} strokes</mat-card-subtitle>
-      </mat-card-header>
+    <div class="kanji-layout">
+      <!-- Left Column: Kanji Information -->
+      <div class="kanji-info-column">
+        <mat-card class="kanji-display-card">
+          <mat-card-header>
+            <mat-card-title class="kanji-display-title">{{ kanjiData.id }}</mat-card-title>
+            <mat-card-subtitle>{{ kanjiData.strokeCount }} strokes</mat-card-subtitle>
+          </mat-card-header>
 
-      <mat-card-content>
-        <div class="kanji-info">
-          <div class="meanings-section">
-            <h3>Meanings</h3>
-            <mat-chip-set>
-              @for (meaning of kanjiData.meaning; track meaning) {
-                <mat-chip>{{ meaning }}</mat-chip>
-              }
-            </mat-chip-set>
-          </div>
+          <mat-card-content>
+            <!-- Prominent Kanji Display with Multiple Fonts -->
+            <div class="kanji-fonts-display">
+              <div class="font-rendering serif-font">
+                <span class="kanji-character">{{ kanjiData.id }}</span>
+                <span class="font-label">Serif</span>
+              </div>
+              <div class="font-rendering sans-font">
+                <span class="kanji-character">{{ kanjiData.id }}</span>
+                <span class="font-label">Sans</span>
+              </div>
+              <div class="font-rendering handwritten-font">
+                <span class="kanji-character">{{ kanjiData.id }}</span>
+                <span class="font-label">Handwritten</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
 
-          <div class="readings-section">
-            <h3>On Readings (音読み)</h3>
-            <mat-chip-set>
-              @for (reading of kanjiData.onReadings; track reading) {
-                <mat-chip>{{ reading }}</mat-chip>
-              }
-            </mat-chip-set>
-          </div>
+        <!-- Core Data Display -->
+        <mat-card class="kanji-data-card">
+          <mat-card-content>
+            <div class="meanings-section">
+              <h3>Meanings</h3>
+              <mat-chip-set>
+                @for (meaning of kanjiData.meaning; track trackByMeaning($index, meaning)) {
+                  <mat-chip>{{ meaning }}</mat-chip>
+                }
+              </mat-chip-set>
+            </div>
 
-          <div class="readings-section">
-            <h3>Kun Readings (訓読み)</h3>
-            <mat-chip-set>
-              @for (reading of kanjiData.kunReadings; track reading) {
-                <mat-chip>{{ reading }}</mat-chip>
-              }
-            </mat-chip-set>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
+            <div class="readings-section">
+              <h3>On Readings (音読み)</h3>
+              <mat-chip-set>
+                @for (reading of kanjiData.onReadings; track trackByReading($index, reading)) {
+                  <mat-chip>{{ reading }}</mat-chip>
+                }
+              </mat-chip-set>
+            </div>
+
+            <div class="readings-section">
+              <h3>Kun Readings (訓読み)</h3>
+              <mat-chip-set>
+                @for (reading of kanjiData.kunReadings; track trackByReading($index, reading)) {
+                  <mat-chip>{{ reading }}</mat-chip>
+                }
+              </mat-chip-set>
+            </div>
+
+            <div class="example-words-section">
+              <h3>Example Words</h3>
+              <div class="example-words">
+                @for (word of exampleWords(); track trackByExampleWord($index, word)) {
+                  <div class="example-word">
+                    <span class="word-kanji">{{ word.kanji }}</span>
+                    <span class="word-reading">{{ word.reading }}</span>
+                    <span class="word-meaning">{{ word.meaning }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Right Column: Reserved for Future Graph -->
+      <div class="graph-column">
+        <mat-card class="graph-placeholder">
+          <mat-card-content>
+            <p>Interactive graph visualization coming soon...</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
   } @else {
     <div class="not-found">
       <mat-card>
