@@ -3,6 +3,7 @@ import {ChangeDetectionStrategy, Component, computed, inject, input, signal} fro
 import {MatCardModule} from '@angular/material/card';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatPaginatorModule, PageEvent} from '@angular/material/paginator';
+import {Router} from '@angular/router';
 import {Kanji} from '@jp-aid/shared-interfaces';
 
 import {MockData} from '../services/mock-data';
@@ -17,38 +18,39 @@ import {MockData} from '../services/mock-data';
 })
 export class KanjiResults {
   private mockData = inject(MockData);
+  private router = inject(Router);
 
-  readonly search_text = input<string>('');
+  readonly searchText = input<string>('');
 
-  all_kanji = signal<Kanji[]>([]);
+  allKanji = signal<Kanji[]>([]);
   private selectedKanjiId = signal<string | null>(null);
   private pageIndex = signal(0);
   private pageSize = signal(10);
 
-  protected filtered_kanji = computed(() => {
-    const searchText = this.search_text();
+  protected filteredKanji = computed(() => {
+    const searchText = this.searchText();
     if (!searchText) {
-      return this.all_kanji();
+      return this.allKanji();
     }
 
-    return this.all_kanji().filter(
+    return this.allKanji().filter(
       kanji =>
         kanji.id.includes(searchText) ||
         kanji.meaning.some(meaning => meaning.includes(searchText)) ||
-        kanji.on_readings.some(reading => reading.includes(searchText)) ||
-        kanji.kun_readings.some(reading => reading.includes(searchText))
+        kanji.onReadings.some(reading => reading.includes(searchText)) ||
+        kanji.kunReadings.some(reading => reading.includes(searchText))
     );
   });
 
-  paginated_kanji = computed(() => {
-    const filtered = this.filtered_kanji();
+  paginatedKanji = computed(() => {
+    const filtered = this.filteredKanji();
     const startIndex = this.pageIndex() * this.pageSize();
     const endIndex = startIndex + this.pageSize();
     return filtered.slice(startIndex, endIndex);
   });
 
   constructor() {
-    this.all_kanji.set(this.mockData.getKanji());
+    this.allKanji.set(this.mockData.getKanji());
   }
 
   protected onPageChange(event: PageEvent): void {
@@ -58,6 +60,7 @@ export class KanjiResults {
 
   protected selectKanji(kanjiId: string): void {
     this.selectedKanjiId.set(kanjiId);
+    this.router.navigate(['/kanji', kanjiId], {queryParams: {q: this.searchText()}});
   }
 
   protected isSelected(kanjiId: string): boolean {

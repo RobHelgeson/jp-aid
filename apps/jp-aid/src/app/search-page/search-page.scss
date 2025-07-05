@@ -1,6 +1,8 @@
+@use 'constants' as constants;
+
 :host {
   --mat-button-protected-label-text-size: 1.25rem;
-  --mat-button-protected-container-shape: 8px;
+  --mat-button-protected-container-shape: 0.5rem;
 
   display: flex;
   align-items: center;
@@ -9,7 +11,7 @@
   background: var(--mat-sys-background);
   padding: 2rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: constants.$small-breakpoint-width) {
     --mat-button-protected-label-text-size: 1rem;
     padding: 1rem;
   }
@@ -26,7 +28,7 @@
     max-width: 75%;
     width: 100%;
 
-    @media (max-width: 768px) {
+    @media (max-width: constants.$small-breakpoint-width) {
       max-width: 100%;
     }
   }
@@ -48,7 +50,7 @@
     padding: 0.75rem;
     line-height: 1.5;
 
-    @media (max-width: 768px) {
+    @media (max-width: constants.$small-breakpoint-width) {
       font-size: 1rem;
     }
   }

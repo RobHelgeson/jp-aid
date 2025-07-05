@@ -1,2 +1,2 @@
 export * from './lib/kanji';
-export * from './lib/shared-interfaces';
+export * from './lib/testing/fixtures';

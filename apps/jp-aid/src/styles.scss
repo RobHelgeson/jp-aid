@@ -2,6 +2,8 @@
 @use '@angular/material' as mat;
 @use '@angular/cdk' as cdk;
 
+@forward 'styles/typography';
+
 html {
   background-color: var(--mat-sys-background);
   color: var(--mat-sys-on-background);

@@ -1,3 +1,5 @@
+@use 'constants' as constants;
+
 .results-page-container {
   min-height: 100vh;
   background: var(--mat-sys-background);
@@ -5,7 +7,7 @@
 }
 
 .results-content {
-  max-width: 1200px;
+  max-width: 75rem;
   margin: 0 auto;
   padding: 2rem;
   min-height: 100vh;
@@ -74,7 +76,7 @@
 }
 
 // Responsive design
-@media (max-width: 768px) {
+@media (max-width: constants.$small-breakpoint-width) {
   .results-content {
     padding: 1rem;
   }
@@ -94,7 +96,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: constants.$extra-small-breakpoint-width) {
   .results-title {
     font-size: 1.25rem;
     word-break: break-word;

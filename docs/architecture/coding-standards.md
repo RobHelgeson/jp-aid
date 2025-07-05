@@ -22,7 +22,8 @@
 
 6. **SCSS over CSS**
     - ALWAYS use sass instead of css for angular components.
-    - never use tailwind classes
+    - NEVER use tailwind classes in templates
+    - prefer `rem` instead of `px` for this project 1rem = 16px. Exceptions are - borders use px; media breakpoints use px.
 
 7. **Angular preferences**
     - use OnPush change detection unless default is REALLY needed

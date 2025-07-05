@@ -21,7 +21,10 @@
             "input": "apps/jp-aid/public"
           }
         ],
-        "styles": ["apps/jp-aid/src/styles.scss"]
+        "styles": ["apps/jp-aid/src/styles.scss"],
+        "stylePreprocessorOptions": {
+          "includePaths": ["apps/jp-aid/src/styles"]
+        }
       },
       "configurations": {
         "production": {

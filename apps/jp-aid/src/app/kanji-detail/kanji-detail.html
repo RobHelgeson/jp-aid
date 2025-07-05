@@ -1,0 +1,57 @@
+<div class="kanji-detail-container">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()" aria-label="Back to results">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Kanji Details</h1>
+  </div>
+
+  @if (kanji(); as kanjiData) {
+    <mat-card class="kanji-card">
+      <mat-card-header>
+        <mat-card-title class="kanji-character">{{ kanjiData.id }}</mat-card-title>
+        <mat-card-subtitle>{{ kanjiData.strokeCount }} strokes</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="kanji-info">
+          <div class="meanings-section">
+            <h3>Meanings</h3>
+            <mat-chip-set>
+              @for (meaning of kanjiData.meaning; track meaning) {
+                <mat-chip>{{ meaning }}</mat-chip>
+              }
+            </mat-chip-set>
+          </div>
+
+          <div class="readings-section">
+            <h3>On Readings (音読み)</h3>
+            <mat-chip-set>
+              @for (reading of kanjiData.onReadings; track reading) {
+                <mat-chip>{{ reading }}</mat-chip>
+              }
+            </mat-chip-set>
+          </div>
+
+          <div class="readings-section">
+            <h3>Kun Readings (訓読み)</h3>
+            <mat-chip-set>
+              @for (reading of kanjiData.kunReadings; track reading) {
+                <mat-chip>{{ reading }}</mat-chip>
+              }
+            </mat-chip-set>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="not-found">
+      <mat-card>
+        <mat-card-content>
+          <p>Kanji not found</p>
+          <button mat-raised-button color="primary" (click)="goBack()">Back to Search</button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

@@ -1,0 +1,54 @@
+@use 'constants' as constants;
+
+.kanji-detail-container {
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+
+  @media (max-width: constants.$small-breakpoint-width) {
+    padding: 1rem;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .kanji-card {
+    .kanji-character {
+      font-size: 4rem;
+      line-height: 1;
+      font-weight: 400;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    mat-card-subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    .kanji-info {
+      margin-top: 1.5rem;
+
+      .meanings-section,
+      .readings-section {
+        margin-bottom: 1.5rem;
+
+        h3 {
+          color: var(--mat-sys-primary);
+        }
+      }
+    }
+  }
+
+  .not-found {
+    text-align: center;
+    padding: 2.5rem;
+
+    mat-card {
+      padding: 1.5rem;
+    }
+  }
+}
