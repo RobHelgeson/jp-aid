@@ -8,11 +8,12 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {ExampleWord, Kanji} from '@jp-aid/shared-interfaces';
 import {map} from 'rxjs';
 
+import {GraphVisualization} from '../graph-visualization/graph-visualization';
 import {MockData} from '../services/mock-data';
 
 @Component({
   selector: 'kl-kanji-detail',
-  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule],
+  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, GraphVisualization],
   templateUrl: './kanji-detail.html',
   styleUrl: './kanji-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,38 +28,20 @@ export class KanjiDetail implements OnInit {
     initialValue: ''
   });
 
-  protected kanji = computed<Kanji | null>(() => {
-    const id = this.kanjiId();
-    if (!id) return null;
-
-    const allKanji = this.mockData.getKanji();
-    return allKanji.find(k => k.id === id) || null;
+  private onKanjiIdChangeEffect = effect(() => {
+    const currentKanjiId = this.kanjiId();
+    if (currentKanjiId) {
+      this.mockData.updateCurrentKanji(currentKanjiId);
+    }
   });
 
-  protected exampleWords = computed<ExampleWord[]>(() => {
-    const currentKanji = this.kanji();
-    if (!currentKanji) return [];
+  protected kanji = computed<Kanji | null>(() => this.mockData.getKanji().find(k => k.id === this.kanjiId()) || null);
 
-    return this.mockData.getExampleWords(currentKanji.id);
-  });
+  protected exampleWords = computed<ExampleWord[]>(() => this.mockData.getExampleWords(this.kanji()?.id || ''));
 
-  protected previousKanji = computed<Kanji | null>(() => {
-    return this.mockData.getPreviousKanji();
-  });
+  protected previousKanji = computed<Kanji | null>(() => this.mockData.getPreviousKanji());
 
-  protected nextKanji = computed<Kanji | null>(() => {
-    return this.mockData.getNextKanji();
-  });
-
-  constructor() {
-    // Update search results context when kanji ID changes
-    effect(() => {
-      const currentKanjiId = this.kanjiId();
-      if (currentKanjiId) {
-        this.mockData.updateCurrentKanji(currentKanjiId);
-      }
-    });
-  }
+  protected nextKanji = computed<Kanji | null>(() => this.mockData.getNextKanji());
 
   ngOnInit(): void {
     // Initialize search results context with a subset of kanji to simulate search results
@@ -71,38 +54,13 @@ export class KanjiDetail implements OnInit {
     }
   }
 
-  /**
-   * TrackBy function for meanings to optimize rendering performance
-   */
   protected trackByMeaning = (index: number, meaning: string): string => meaning;
-
-  /**
-   * TrackBy function for readings to optimize rendering performance
-   */
   protected trackByReading = (index: number, reading: string): string => reading;
-
-  /**
-   * TrackBy function for example words to optimize rendering performance
-   */
   protected trackByExampleWord = (index: number, word: ExampleWord): string => word.kanji;
 
-  /**
-   * Check if there is a previous kanji available
-   */
-  protected hasPrevious(): boolean {
-    return this.mockData.hasPreviousKanji();
-  }
+  protected hasPrevious = (): boolean => this.mockData.hasPreviousKanji();
+  protected hasNext = (): boolean => this.mockData.hasNextKanji();
 
-  /**
-   * Check if there is a next kanji available
-   */
-  protected hasNext(): boolean {
-    return this.mockData.hasNextKanji();
-  }
-
-  /**
-   * Navigate to previous kanji in search results
-   */
   protected navigateToPrevious(): void {
     const prevKanji = this.mockData.getPreviousKanji();
     if (prevKanji) {
@@ -110,9 +68,6 @@ export class KanjiDetail implements OnInit {
     }
   }
 
-  /**
-   * Navigate to next kanji in search results
-   */
   protected navigateToNext(): void {
     const nextKanji = this.mockData.getNextKanji();
     if (nextKanji) {

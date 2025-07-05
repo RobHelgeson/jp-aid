@@ -1,2 +1,2 @@
+export * from './lib/graph';
 export * from './lib/kanji';
-export * from './lib/testing/fixtures';

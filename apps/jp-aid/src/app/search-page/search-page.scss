@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--mat-sys-background);
   padding: 2rem;
 
@@ -34,6 +34,8 @@
   }
 
   .search-form {
+    --mat-form-field-outlined-container-shape: 16px;
+
     display: flex;
     flex-direction: column;
     gap: 1.5rem;

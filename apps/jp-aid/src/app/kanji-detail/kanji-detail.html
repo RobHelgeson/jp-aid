@@ -10,11 +10,15 @@
         <mat-icon>navigate_before</mat-icon>
         @if (previousKanji(); as prev) {
           {{ prev.id }}
+        } @else {
+          &nbsp;
         }
       </button>
       <button mat-raised-button color="accent" (click)="navigateToNext()" [disabled]="!hasNext()" aria-label="Next kanji">
         @if (nextKanji(); as next) {
           {{ next.id }}
+        } @else {
+          &nbsp;
         }
         <mat-icon>navigate_next</mat-icon>
       </button>
@@ -54,7 +58,7 @@
         <mat-card class="kanji-data-card">
           <mat-card-content>
             <div class="meanings-section">
-              <h3>Meanings</h3>
+              <h3>意味 (Meanings)</h3>
               <mat-chip-set>
                 @for (meaning of kanjiData.meaning; track trackByMeaning($index, meaning)) {
                   <mat-chip>{{ meaning }}</mat-chip>
@@ -63,7 +67,7 @@
             </div>
 
             <div class="readings-section">
-              <h3>On Readings (音読み)</h3>
+              <h3>音読み (On Readings)</h3>
               <mat-chip-set>
                 @for (reading of kanjiData.onReadings; track trackByReading($index, reading)) {
                   <mat-chip>{{ reading }}</mat-chip>
@@ -72,7 +76,7 @@
             </div>
 
             <div class="readings-section">
-              <h3>Kun Readings (訓読み)</h3>
+              <h3>訓読み (Kun Readings)</h3>
               <mat-chip-set>
                 @for (reading of kanjiData.kunReadings; track trackByReading($index, reading)) {
                   <mat-chip>{{ reading }}</mat-chip>
@@ -81,7 +85,7 @@
             </div>
 
             <div class="example-words-section">
-              <h3>Example Words</h3>
+              <h3>例文 (Example Words)</h3>
               <div class="example-words">
                 @for (word of exampleWords(); track trackByExampleWord($index, word)) {
                   <div class="example-word">
@@ -96,13 +100,9 @@
         </mat-card>
       </div>
 
-      <!-- Right Column: Reserved for Future Graph -->
+      <!-- Right Column: Graph Visualization -->
       <div class="graph-column">
-        <mat-card class="graph-placeholder">
-          <mat-card-content>
-            <p>Interactive graph visualization coming soon...</p>
-          </mat-card-content>
-        </mat-card>
+        <kl-graph-visualization [kanjiId]="kanji()?.id" />
       </div>
     </div>
   } @else {

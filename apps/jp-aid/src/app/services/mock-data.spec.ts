@@ -1,5 +1,5 @@
 import {TestBed} from '@angular/core/testing';
-import {kanjiFixture} from '@jp-aid/shared-interfaces';
+import {kanjiFixture} from '@jp-aid/shared-interfaces/testing';
 
 import {MockData} from './mock-data';
 

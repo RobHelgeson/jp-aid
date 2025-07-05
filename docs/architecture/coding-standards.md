@@ -164,6 +164,29 @@
         // Add to TestBed imports
         ```
 
+10. **properties MUST use camel case**
+11. **Fixtures**
+    - Use fixtures when you would otherwise create an object literal
+    - When creating an interface always create a fixture for easy creation of said interface:
+
+    Example:
+
+    ```./kanji.ts
+    export interface ExampleWord {
+        readonly kanji: string;
+        readonly reading: string;
+        readonly meaning: string;
+    }
+    ```
+
+    ```../testing/kanji.fixtures.ts
+        export const exampleWordFixture = (
+            kanji: ExampleWord['kanji'],
+            reading: ExampleWord['reading'],
+            meaning: ExampleWord['meaning']
+        ): ExampleWord => ({kanji, reading, meaning});
+    ```
+
 # Additional Coding Standards (Architecture-Driven)
 
 1. **Feature-Based Structure & Shared Libraries**

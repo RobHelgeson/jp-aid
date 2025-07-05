@@ -1,5 +1,13 @@
 import {Injectable, signal} from '@angular/core';
-import {ExampleWord, Kanji, kanjiFixture} from '@jp-aid/shared-interfaces';
+import {ExampleWord, GraphEdge, GraphNode, Kanji, KanjiNode, NodeType, PrimitiveNode, RadicalNode} from '@jp-aid/shared-interfaces';
+import {
+  exampleWordFixture,
+  graphEdgeFixture,
+  kanjiFixture,
+  kanjiNodeFixture,
+  primitiveNodeFixture,
+  radicalNodeFixture
+} from '@jp-aid/shared-interfaces/testing';
 
 @Injectable({
   providedIn: 'root'
@@ -7,6 +15,7 @@ import {ExampleWord, Kanji, kanjiFixture} from '@jp-aid/shared-interfaces';
 export class MockData {
   private searchResults = signal<Kanji[]>([]);
   private currentKanjiIndex = signal<number>(-1);
+
   getKanji = (): Kanji[] => [
     kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた(る)'], 14),
     kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
@@ -17,116 +26,130 @@ export class MockData {
     kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4),
     kanjiFixture('木', ['tree', 'wood'], ['モク', 'ボク'], ['き'], 4),
     kanjiFixture('金', ['gold', 'money'], ['キン', 'コン'], ['かね'], 8),
-    kanjiFixture('土', ['earth', 'soil'], ['ド', 'ト'], ['つち'], 3),
-    kanjiFixture('月', ['moon', 'month'], ['ゲツ', 'ガツ'], ['つき'], 4),
-    kanjiFixture('山', ['mountain'], ['サン'], ['やま'], 3),
-    kanjiFixture('川', ['river'], ['セン'], ['かわ'], 3),
-    kanjiFixture('田', ['rice field'], ['デン'], ['た'], 5),
-    kanjiFixture('天', ['heaven', 'sky'], ['テン'], ['あま'], 4),
-    kanjiFixture('空', ['sky', 'empty'], ['クウ'], ['そら'], 8),
-    kanjiFixture('雨', ['rain'], ['ウ'], ['あま'], 8),
-    kanjiFixture('風', ['wind'], ['フウ', 'フ'], ['かぜ'], 9),
-    kanjiFixture('花', ['flower'], ['カ'], ['はな'], 7),
-    kanjiFixture('草', ['grass'], ['ソウ'], ['くさ'], 9),
-    kanjiFixture('虫', ['insect'], ['チュウ'], ['むし'], 6),
-    kanjiFixture('犬', ['dog'], ['ケン'], ['いぬ'], 4),
-    kanjiFixture('猫', ['cat'], ['ビョウ'], ['ねこ'], 11),
-    kanjiFixture('鳥', ['bird'], ['チョウ'], ['とり'], 11),
-    kanjiFixture('魚', ['fish'], ['ギョ'], ['さかな'], 11),
-    kanjiFixture('牛', ['cow'], ['ギュウ'], ['うし'], 4),
-    kanjiFixture('馬', ['horse'], ['バ'], ['うま'], 10),
-    kanjiFixture('羊', ['sheep'], ['ヨウ'], ['ひつじ'], 6),
-    kanjiFixture('豚', ['pig'], ['トン'], ['ぶた'], 11),
-    kanjiFixture('鹿', ['deer'], ['ロク'], ['しか'], 11),
-    kanjiFixture('象', ['elephant'], ['ゾウ'], [], 14),
-    kanjiFixture('虎', ['tiger'], ['コウ'], ['トラ'], 8),
-    kanjiFixture('狼', ['wolf'], ['ロウ'], ['オオミツネ'], 10),
-    kanjiFixture('熊', ['bear'], ['ユウ'], ['クマ'], 14),
-    kanjiFixture('猿', ['monkey'], ['エン'], ['サル'], 13),
-    kanjiFixture('龍', ['dragon'], ['リュウ'], ['ダン'], 16),
-    kanjiFixture('亀', ['turtle'], ['キ'], ['カメ'], 11),
-    kanjiFixture('蛇', ['snake'], ['ジャ'], ['ヘビ'], 11),
-    kanjiFixture('蛙', ['frog'], ['ア'], ['カエル'], 12),
-    kanjiFixture('鯨', ['whale'], ['ゲイ'], ['クジラ'], 19),
-    kanjiFixture('鷹', ['hawk'], ['ユウ'], ['タカ'], 24),
-    kanjiFixture('鴨', ['duck'], ['オウ'], ['カモ'], 16),
-    kanjiFixture('鶴', ['crane'], ['カク'], ['ツル'], 21),
-    kanjiFixture('鳩', ['pigeon'], ['キュウ'], ['ハト'], 13),
-    kanjiFixture('鷲', ['eagle'], ['シュウ'], ['ワシ'], 23),
-    kanjiFixture('鴉', ['crow'], ['ア'], ['カラス'], 15),
-    kanjiFixture('鵬', ['mythical bird'], ['ホウ'], [], 19),
-    kanjiFixture('鵠', ['swan'], ['コク'], ['ハクチョウ'], 19),
-    kanjiFixture('鷗', ['seagull'], ['オウ'], ['カモメ'], 22),
-    kanjiFixture('鷹', ['falcon'], ['ユウ'], ['タカ'], 24),
-    kanjiFixture('鸚', ['parrot'], ['オウ'], [], 30),
-    kanjiFixture('鸛', ['stork'], ['カン'], ['コウノトリ'], 24),
-    kanjiFixture('鸞', ['phoenix'], ['ラン'], [], 30)
+    kanjiFixture('土', ['earth', 'soil'], ['ド', 'ト'], ['つち'], 3)
   ];
+
+  getGraphData = (kanjiId: string): {nodes: GraphNode[]; edges: GraphEdge[]} => {
+    const nodes: GraphNode[] = [];
+    const edges: GraphEdge[] = [];
+
+    const kanji = this.getKanji().find(k => k.id === kanjiId);
+    if (!kanji) {
+      return {nodes, edges};
+    }
+
+    const kanjiNode: KanjiNode = kanjiNodeFixture(
+      kanji.id,
+      kanji.id,
+      0,
+      0,
+      20,
+      '#FF0000',
+      NodeType.Kanji,
+      kanji.meaning.join(', '),
+      kanji.onReadings,
+      kanji.kunReadings,
+      kanji.strokeCount
+    );
+    nodes.push(kanjiNode);
+
+    // Mock radicals
+    const radical1: RadicalNode = radicalNodeFixture('言', '言', -1, 1, 10, '#00FF00', NodeType.Radical, 7, ['speech']);
+    nodes.push(radical1);
+    edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, '#0000FF', 'has radical'));
+
+    // Mock primitives
+    const primitive1: PrimitiveNode = primitiveNodeFixture('五', '五', 1, 1, 10, '#FFFF00', NodeType.Primitive, 'five');
+    nodes.push(primitive1);
+    edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, '#0000FF', 'has primitive'));
+
+    const primitive2: PrimitiveNode = primitiveNodeFixture('口', '口', 1, -1, 10, '#FFFF00', NodeType.Primitive, 'mouth');
+    nodes.push(primitive2);
+    edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, '#0000FF', 'has primitive'));
+
+    // Mock related Kanji
+    const relatedKanji1 = this.getKanji().find(k => k.id === '日');
+    if (relatedKanji1) {
+      const relatedKanjiNode1: KanjiNode = kanjiNodeFixture(
+        relatedKanji1.id,
+        relatedKanji1.id,
+        -2,
+        0,
+        15,
+        '#FF0000',
+        NodeType.Kanji,
+        relatedKanji1.meaning.join(', '),
+        relatedKanji1.onReadings,
+        relatedKanji1.kunReadings,
+        relatedKanji1.strokeCount
+      );
+      nodes.push(relatedKanjiNode1);
+      edges.push(graphEdgeFixture(kanji.id, relatedKanjiNode1.id, 2, '#0000FF', 'related'));
+    }
+
+    return {nodes, edges};
+  };
 
   /**
    * Get example words for a specific kanji character
    * @param kanjiId The kanji character to get examples for
    * @returns Array of example words containing the kanji
    */
-  getExampleWords(kanjiId: string): ExampleWord[] {
+  getExampleWords = (kanjiId: string): ExampleWord[] => {
     const exampleWordsMap: Record<string, ExampleWord[]> = {
       語: [
-        {kanji: '日本語', reading: 'にほんご', meaning: 'Japanese language'},
-        {kanji: '英語', reading: 'えいご', meaning: 'English language'},
-        {kanji: '物語', reading: 'ものがたり', meaning: 'story'}
+        exampleWordFixture('日本語', 'にほんご', 'Japanese language'),
+        exampleWordFixture('英語', 'えいご', 'English language'),
+        exampleWordFixture('物語', 'ものがたり', 'story')
       ],
       日: [
-        {kanji: '今日', reading: 'きょう', meaning: 'today'},
-        {kanji: '日本', reading: 'にっぽん', meaning: 'Japan'},
-        {kanji: '毎日', reading: 'まいにち', meaning: 'every day'}
+        exampleWordFixture('今日', 'きょう', 'today'),
+        exampleWordFixture('日本', 'にっぽん', 'Japan'),
+        exampleWordFixture('毎日', 'まいにち', 'every day')
       ],
       本: [
-        {kanji: '日本', reading: 'にっぽん', meaning: 'Japan'},
-        {kanji: '本当', reading: 'ほんとう', meaning: 'really'},
-        {kanji: '教科書', reading: 'きょうかしょ', meaning: 'textbook'}
+        exampleWordFixture('日本', 'にっぽん', 'Japan'),
+        exampleWordFixture('本当', 'ほんとう', 'really'),
+        exampleWordFixture('教科書', 'きょうかしょ', 'textbook')
       ],
       水: [
-        {kanji: '水曜日', reading: 'すいようび', meaning: 'Wednesday'},
-        {kanji: '飲み物', reading: 'のみもの', meaning: 'beverage'},
-        {kanji: '水道', reading: 'すいどう', meaning: 'water supply'}
+        exampleWordFixture('水曜日', 'すいようび', 'Wednesday'),
+        exampleWordFixture('飲み物', 'のみもの', 'beverage'),
+        exampleWordFixture('水道', 'すいどう', 'water supply')
       ]
     };
 
     return exampleWordsMap[kanjiId] || [];
-  }
+  };
 
   /**
    * Set search results for navigation context
    * @param results Array of kanji that were found in the search
    * @param currentKanjiId The currently selected kanji ID
    */
-  setSearchResults(results: Kanji[], currentKanjiId: string): void {
+  setSearchResults = (results: Kanji[], currentKanjiId: string): void => {
     this.searchResults.set(results);
     const index = results.findIndex(kanji => kanji.id === currentKanjiId);
     this.currentKanjiIndex.set(index);
-  }
+  };
 
   /**
    * Get current search results
    * @returns Array of kanji from current search
    */
-  getSearchResults(): Kanji[] {
-    return this.searchResults();
-  }
+  getSearchResults = (): Kanji[] => this.searchResults();
 
   /**
    * Get current kanji index in search results
    * @returns Index of current kanji in search results, or -1 if not found
    */
-  getCurrentKanjiIndex(): number {
-    return this.currentKanjiIndex();
-  }
+  getCurrentKanjiIndex = (): number => this.currentKanjiIndex();
 
   /**
    * Get previous kanji in search results
    * @returns Previous kanji or null if at beginning or no search context
    */
-  getPreviousKanji(): Kanji | null {
+  getPreviousKanji = (): Kanji | null => {
     const results = this.searchResults();
     const currentIndex = this.currentKanjiIndex();
 
@@ -135,13 +158,13 @@ export class MockData {
     }
 
     return results[currentIndex - 1];
-  }
+  };
 
   /**
    * Get next kanji in search results
    * @returns Next kanji or null if at end or no search context
    */
-  getNextKanji(): Kanji | null {
+  getNextKanji = (): Kanji | null => {
     const results = this.searchResults();
     const currentIndex = this.currentKanjiIndex();
 
@@ -150,34 +173,31 @@ export class MockData {
     }
 
     return results[currentIndex + 1];
-  }
+  };
 
   /**
    * Check if there is a previous kanji available
    * @returns True if previous kanji exists
    */
-  hasPreviousKanji(): boolean {
-    const currentIndex = this.currentKanjiIndex();
-    return currentIndex > 0;
-  }
+  hasPreviousKanji = (): boolean => this.currentKanjiIndex() > 0;
 
   /**
    * Check if there is a next kanji available
    * @returns True if next kanji exists
    */
-  hasNextKanji(): boolean {
+  hasNextKanji = (): boolean => {
     const results = this.searchResults();
     const currentIndex = this.currentKanjiIndex();
     return currentIndex >= 0 && currentIndex < results.length - 1;
-  }
+  };
 
   /**
    * Update current kanji index when navigating
    * @param kanjiId The new current kanji ID
    */
-  updateCurrentKanji(kanjiId: string): void {
+  updateCurrentKanji = (kanjiId: string): void => {
     const results = this.searchResults();
     const index = results.findIndex(kanji => kanji.id === kanjiId);
     this.currentKanjiIndex.set(index);
-  }
+  };
 }

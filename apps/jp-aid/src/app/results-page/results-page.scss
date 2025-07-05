@@ -1,7 +1,7 @@
 @use 'constants' as constants;
 
 .results-page-container {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--mat-sys-background);
   overflow-y: auto;
 }
@@ -10,7 +10,7 @@
   max-width: 75rem;
   margin: 0 auto;
   padding: 2rem;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .results-header {

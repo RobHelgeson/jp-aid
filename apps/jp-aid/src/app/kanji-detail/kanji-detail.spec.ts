@@ -1,11 +1,45 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {ActivatedRoute, Params, Router} from '@angular/router';
-import {Kanji, kanjiFixture} from '@jp-aid/shared-interfaces';
+import {GraphEdge, GraphNode, Kanji, KanjiNode, NodeType, PrimitiveNode, RadicalNode} from '@jp-aid/shared-interfaces';
+import {
+  graphEdgeFixture,
+  kanjiFixture,
+  kanjiNodeFixture,
+  primitiveNodeFixture,
+  radicalNodeFixture
+} from '@jp-aid/shared-interfaces/testing';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 import {MockData} from '../services/mock-data';
 import {KanjiDetail} from './kanji-detail';
+
+jest.mock('sigma', () => {
+  return {
+    __esModule: true,
+    default: jest.fn().mockImplementation(() => {
+      // Mock any methods that are called in your component
+      return {
+        setNodeAttribute: jest.fn(),
+        clear: jest.fn(),
+        kill: jest.fn(),
+        setGraph: jest.fn()
+      };
+    })
+  };
+});
+
+jest.mock('graphology', () => {
+  return {
+    __esModule: true,
+    default: jest.fn().mockImplementation(() => {
+      return {
+        addNode: jest.fn(),
+        addEdge: jest.fn()
+      };
+    })
+  };
+});
 
 describe('KanjiDetail', () => {
   let component: KanjiDetail;
@@ -14,6 +48,7 @@ describe('KanjiDetail', () => {
   let mockRouter: {navigate: jest.Mock};
   let mockData: {
     getKanji: jest.Mock;
+    getGraphData: jest.Mock;
     getExampleWords: jest.Mock;
     setSearchResults: jest.Mock;
     updateCurrentKanji: jest.Mock;
@@ -38,6 +73,7 @@ describe('KanjiDetail', () => {
     };
     mockData = {
       getKanji: jest.fn(),
+      getGraphData: jest.fn(),
       getExampleWords: jest.fn(),
       setSearchResults: jest.fn(),
       updateCurrentKanji: jest.fn(),
@@ -55,6 +91,67 @@ describe('KanjiDetail', () => {
       kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4),
       kanjiFixture('人', ['person'], ['ジン', 'ニン'], ['ひと'], 2)
     ]);
+
+    mockData.getGraphData.mockImplementation((kanjiId: string) => {
+      const nodes: GraphNode[] = [];
+      const edges: GraphEdge[] = [];
+
+      const kanji = mockData.getKanji().find(k => k.id === kanjiId);
+      if (!kanji) {
+        return {nodes, edges};
+      }
+
+      const kanjiNode: KanjiNode = kanjiNodeFixture(
+        kanji.id,
+        kanji.id,
+        0,
+        0,
+        20,
+        '#FF0000',
+        NodeType.Kanji,
+        kanji.meaning.join(', '),
+        kanji.onReadings,
+        kanji.kunReadings,
+        kanji.strokeCount
+      );
+      nodes.push(kanjiNode);
+
+      // Mock radicals
+      const radical1: RadicalNode = radicalNodeFixture('言', '言', -1, 1, 10, '#00FF00', NodeType.Radical, 7, ['speech']);
+      nodes.push(radical1);
+      edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, '#0000FF', 'has radical'));
+
+      // Mock primitives
+      const primitive1: PrimitiveNode = primitiveNodeFixture('五', '五', 1, 1, 10, '#FFFF00', NodeType.Primitive, 'five');
+      nodes.push(primitive1);
+      edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, '#0000FF', 'has primitive'));
+
+      const primitive2: PrimitiveNode = primitiveNodeFixture('口', '口', 1, -1, 10, '#FFFF00', NodeType.Primitive, 'mouth');
+      nodes.push(primitive2);
+      edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, '#0000FF', 'has primitive'));
+
+      // Mock related Kanji
+      const relatedKanji1 = mockData.getKanji().find(k => k.id === '日');
+      if (relatedKanji1) {
+        const relatedKanjiNode1: KanjiNode = kanjiNodeFixture(
+          relatedKanji1.id,
+          relatedKanji1.id,
+          -2,
+          0,
+          15,
+          '#FF0000',
+          NodeType.Kanji,
+          relatedKanji1.meaning.join(', '),
+          relatedKanji1.onReadings,
+          relatedKanji1.kunReadings,
+          relatedKanji1.strokeCount
+        );
+        nodes.push(relatedKanjiNode1);
+        edges.push(graphEdgeFixture(kanji.id, relatedKanjiNode1.id, 2, '#0000FF', 'related'));
+      }
+
+      return {nodes, edges};
+    });
 
     // Setup example words mock
     mockData.getExampleWords.mockImplementation((kanjiId: string) => {
@@ -361,14 +458,11 @@ describe('KanjiDetail', () => {
       expect(cards.length).toBeGreaterThan(0);
     });
 
-    it('should display graph placeholder in right column', () => {
+    it('should display graph in right column', () => {
       const compiled = fixture.nativeElement;
 
-      const graphPlaceholder = compiled.querySelector('.graph-placeholder');
-      expect(graphPlaceholder).toBeTruthy();
-
-      const placeholderText = graphPlaceholder?.textContent;
-      expect(placeholderText).toContain('Interactive graph visualization coming soon');
+      const graph = compiled.querySelector('kl-graph-visualization');
+      expect(graph).toBeTruthy();
     });
 
     it('should handle kanji without example words gracefully', () => {

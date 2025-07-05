@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@jp-aid/shared-interfaces": ["libs/shared-interfaces/src/index.ts"]
+      "@jp-aid/shared-interfaces": ["libs/shared-interfaces/src/index.ts"],
+      "@jp-aid/shared-interfaces/testing": ["libs/shared-interfaces/src/lib/testing/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
