@@ -1,86 +1,62 @@
-import {AfterViewInit, Component, ElementRef, inject, Input, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, OnDestroy, ViewChild} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {GraphEdge, GraphNode, NodeType} from '@jp-aid/shared-interfaces';
-import Graph from 'graphology';
-import Sigma from 'sigma';
-import {EdgeLineProgram, NodeCircleProgram} from 'sigma/rendering';
 
-import {MockData} from '../services/mock-data';
+import {GraphService} from '../services/graph/graph.service';
 
 @Component({
   selector: 'kl-graph-visualization',
   standalone: true,
   imports: [MatButtonModule, MatIconModule],
   templateUrl: './graph-visualization.html',
-  styleUrls: ['./graph-visualization.scss']
+  styleUrls: ['./graph-visualization.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GraphVisualization implements AfterViewInit, OnChanges {
+export class GraphVisualization implements AfterViewInit, OnDestroy {
   @ViewChild('graphContainer') graphContainer!: ElementRef;
-  @Input() kanjiId?: string;
-  @Input() maxNodes = 50; // Default limit for nodes
-  @Input() maxEdges = 100; // Default limit for edges
+  kanjiId = input<string | undefined>(undefined);
+  maxNodes = input<number>(50); // Default limit for nodes
+  maxEdges = input<number>(100); // Default limit for edges
 
-  private mockData = inject(MockData);
-  private sigmaInstance?: Sigma;
+  private graphService = inject(GraphService);
+  private nodeClicked = toSignal(this.graphService.nodeClicked$);
+
+  // Effect to handle kanjiId changes
+  private onKanjiIdChangeEffect = effect(() => {
+    const kanjiId = this.kanjiId();
+    const maxNodes = this.maxNodes();
+    const maxEdges = this.maxEdges();
+
+    if (kanjiId && this.graphContainer) {
+      this.graphService.updateGraph(kanjiId, maxNodes, maxEdges);
+    }
+  });
+
+  // Effect to handle node clicks
+  private onNodeClickEffect = effect(() => {
+    const nodeId = this.nodeClicked();
+    if (nodeId) {
+      console.log('Clicked node from service:', nodeId);
+      // Handle node click, e.g., emit an output event or navigate
+    }
+  });
 
   ngAfterViewInit(): void {
-    this.renderGraph();
-  }
+    if (this.graphContainer) {
+      this.graphService.initialize(this.graphContainer.nativeElement);
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['kanjiId'] && !changes['kanjiId'].firstChange) {
-      this.renderGraph();
+      // Trigger initial graph update if kanjiId is already set
+      const kanjiId = this.kanjiId();
+      if (kanjiId) {
+        this.graphService.updateGraph(kanjiId, this.maxNodes(), this.maxEdges());
+      }
     }
   }
 
-  zoomIn(): void {
-    this.sigmaInstance?.getCamera().animatedZoom(this.sigmaInstance.getCamera().ratio * 1.2);
-  }
+  ngOnDestroy = (): void => this.graphService.destroy();
 
-  zoomOut(): void {
-    this.sigmaInstance?.getCamera().animatedZoom(this.sigmaInstance.getCamera().ratio / 1.2);
-  }
-
-  resetGraph(): void {
-    this.sigmaInstance?.getCamera().animate({x: 0, y: 0, ratio: 1, angle: 0}, {duration: 500});
-  }
-
-  private renderGraph(): void {
-    if (!this.kanjiId) {
-      return;
-    }
-    const graphData = this.mockData.getGraphData(this.kanjiId);
-    const graph = new Graph();
-
-    // Apply limits to nodes and edges
-    const limitedNodes = graphData.nodes.slice(0, this.maxNodes);
-    const limitedEdges = graphData.edges.slice(0, this.maxEdges);
-
-    limitedNodes.forEach((node: GraphNode) => {
-      graph.addNode(node.id, {...node});
-    });
-    limitedEdges.forEach((edge: GraphEdge) => {
-      graph.addEdge(edge.source, edge.target, {...edge});
-    });
-
-    if (this.sigmaInstance) {
-      this.sigmaInstance.setGraph(graph);
-    } else if (this.graphContainer) {
-      this.sigmaInstance = new Sigma(graph, this.graphContainer.nativeElement, {
-        nodeProgramClasses: {
-          [NodeType.Kanji]: NodeCircleProgram,
-          [NodeType.Radical]: NodeCircleProgram,
-          [NodeType.Primitive]: NodeCircleProgram
-        },
-        edgeProgramClasses: {
-          default: EdgeLineProgram
-        }
-      });
-
-      this.sigmaInstance.on('clickNode', e => {
-        console.log('Clicked node:', e.node);
-      });
-    }
-  }
+  zoomIn = (): void => this.graphService.zoomIn();
+  zoomOut = (): void => this.graphService.zoomOut();
+  resetGraph = (): void => this.graphService.resetGraph();
 }

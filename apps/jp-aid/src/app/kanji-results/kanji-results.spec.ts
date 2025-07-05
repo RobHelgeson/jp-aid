@@ -4,7 +4,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Router} from '@angular/router';
 import {kanjiFixture} from '@jp-aid/shared-interfaces/testing';
 
-import {MockData} from '../services/mock-data';
+import {MockData} from '../services/mock-data.service';
 import {KanjiResults} from './kanji-results';
 
 describe('KanjiResults', () => {

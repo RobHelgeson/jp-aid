@@ -6,7 +6,7 @@ import {MatPaginatorModule, PageEvent} from '@angular/material/paginator';
 import {Router} from '@angular/router';
 import {Kanji} from '@jp-aid/shared-interfaces';
 
-import {MockData} from '../services/mock-data';
+import {MockData} from '../services/mock-data.service';
 
 @Component({
   selector: 'kl-kanji-results',

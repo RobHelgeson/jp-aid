@@ -9,37 +9,15 @@ import {
   primitiveNodeFixture,
   radicalNodeFixture
 } from '@jp-aid/shared-interfaces/testing';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
-import {MockData} from '../services/mock-data';
+import {GraphService} from '../services/graph/graph.service';
+import {MockData} from '../services/mock-data.service';
 import {KanjiDetail} from './kanji-detail';
 
-jest.mock('sigma', () => {
-  return {
-    __esModule: true,
-    default: jest.fn().mockImplementation(() => {
-      // Mock any methods that are called in your component
-      return {
-        setNodeAttribute: jest.fn(),
-        clear: jest.fn(),
-        kill: jest.fn(),
-        setGraph: jest.fn()
-      };
-    })
-  };
-});
-
-jest.mock('graphology', () => {
-  return {
-    __esModule: true,
-    default: jest.fn().mockImplementation(() => {
-      return {
-        addNode: jest.fn(),
-        addEdge: jest.fn()
-      };
-    })
-  };
-});
+jest.mock('graphology', () => ({}));
+jest.mock('sigma', () => ({}));
+jest.mock('sigma/rendering', () => ({}));
 
 describe('KanjiDetail', () => {
   let component: KanjiDetail;
@@ -57,6 +35,7 @@ describe('KanjiDetail', () => {
     hasPreviousKanji: jest.Mock;
     hasNextKanji: jest.Mock;
   };
+  let mockGraphService: Partial<GraphService>;
   let paramsSubject: BehaviorSubject<Kanji>;
   let queryParamsSubject: BehaviorSubject<Params>;
 
@@ -81,6 +60,15 @@ describe('KanjiDetail', () => {
       getNextKanji: jest.fn(),
       hasPreviousKanji: jest.fn(),
       hasNextKanji: jest.fn()
+    };
+    mockGraphService = {
+      initialize: jest.fn(),
+      updateGraph: jest.fn(),
+      zoomIn: jest.fn(),
+      zoomOut: jest.fn(),
+      resetGraph: jest.fn(),
+      destroy: jest.fn(),
+      nodeClicked$: new Subject<string>()
     };
 
     // Setup mock data
@@ -162,7 +150,7 @@ describe('KanjiDetail', () => {
           {kanji: '水道', reading: 'すいどう', meaning: 'water supply'}
         ],
         火: [
-          {kanji: '火曜日', reading: 'かようび', meaning: 'Tuesday'},
+          {kanji: '火曜日', reading: 'か���うび', meaning: 'Tuesday'},
           {kanji: '火事', reading: 'かじ', meaning: 'fire'},
           {kanji: '花火', reading: 'はなび', meaning: 'fireworks'}
         ]
@@ -181,7 +169,8 @@ describe('KanjiDetail', () => {
       providers: [
         {provide: ActivatedRoute, useValue: mockActivatedRoute},
         {provide: Router, useValue: mockRouter},
-        {provide: MockData, useValue: mockData}
+        {provide: MockData, useValue: mockData},
+        {provide: GraphService, useValue: mockGraphService}
       ]
     }).compileComponents();
 

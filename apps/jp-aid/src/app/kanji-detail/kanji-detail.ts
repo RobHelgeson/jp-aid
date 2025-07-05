@@ -9,7 +9,7 @@ import {ExampleWord, Kanji} from '@jp-aid/shared-interfaces';
 import {map} from 'rxjs';
 
 import {GraphVisualization} from '../graph-visualization/graph-visualization';
-import {MockData} from '../services/mock-data';
+import {MockData} from '../services/mock-data.service';
 
 @Component({
   selector: 'kl-kanji-detail',
