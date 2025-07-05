@@ -20,6 +20,45 @@
       align-items: center;
       gap: 0.5rem;
     }
+
+    .navigation-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        min-width: 3rem;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        @media (max-width: constants.$small-breakpoint-width) {
+          padding: 0.5rem;
+          min-width: 2.5rem;
+
+          // Hide kanji character on small screens to save space
+          .kanji-preview {
+            display: none;
+          }
+        }
+      }
+    }
+
+    @media (max-width: constants.$small-breakpoint-width) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .navigation-controls {
+        align-self: flex-end;
+        margin-left: 0;
+      }
+    }
   }
 
   .kanji-layout {

@@ -5,6 +5,20 @@
       Return to Results
     </button>
     <h1>Kanji Details</h1>
+    <div class="navigation-controls">
+      <button mat-raised-button color="accent" (click)="navigateToPrevious()" [disabled]="!hasPrevious()" aria-label="Previous kanji">
+        <mat-icon>navigate_before</mat-icon>
+        @if (previousKanji(); as prev) {
+          {{ prev.id }}
+        }
+      </button>
+      <button mat-raised-button color="accent" (click)="navigateToNext()" [disabled]="!hasNext()" aria-label="Next kanji">
+        @if (nextKanji(); as next) {
+          {{ next.id }}
+        }
+        <mat-icon>navigate_next</mat-icon>
+      </button>
+    </div>
   </div>
 
   @if (kanji(); as kanjiData) {

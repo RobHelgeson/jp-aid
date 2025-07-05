@@ -1,10 +1,12 @@
-import {Injectable} from '@angular/core';
+import {Injectable, signal} from '@angular/core';
 import {ExampleWord, Kanji, kanjiFixture} from '@jp-aid/shared-interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MockData {
+  private searchResults = signal<Kanji[]>([]);
+  private currentKanjiIndex = signal<number>(-1);
   getKanji = (): Kanji[] => [
     kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた(る)'], 14),
     kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
@@ -91,5 +93,91 @@ export class MockData {
     };
 
     return exampleWordsMap[kanjiId] || [];
+  }
+
+  /**
+   * Set search results for navigation context
+   * @param results Array of kanji that were found in the search
+   * @param currentKanjiId The currently selected kanji ID
+   */
+  setSearchResults(results: Kanji[], currentKanjiId: string): void {
+    this.searchResults.set(results);
+    const index = results.findIndex(kanji => kanji.id === currentKanjiId);
+    this.currentKanjiIndex.set(index);
+  }
+
+  /**
+   * Get current search results
+   * @returns Array of kanji from current search
+   */
+  getSearchResults(): Kanji[] {
+    return this.searchResults();
+  }
+
+  /**
+   * Get current kanji index in search results
+   * @returns Index of current kanji in search results, or -1 if not found
+   */
+  getCurrentKanjiIndex(): number {
+    return this.currentKanjiIndex();
+  }
+
+  /**
+   * Get previous kanji in search results
+   * @returns Previous kanji or null if at beginning or no search context
+   */
+  getPreviousKanji(): Kanji | null {
+    const results = this.searchResults();
+    const currentIndex = this.currentKanjiIndex();
+
+    if (results.length === 0 || currentIndex <= 0) {
+      return null;
+    }
+
+    return results[currentIndex - 1];
+  }
+
+  /**
+   * Get next kanji in search results
+   * @returns Next kanji or null if at end or no search context
+   */
+  getNextKanji(): Kanji | null {
+    const results = this.searchResults();
+    const currentIndex = this.currentKanjiIndex();
+
+    if (results.length === 0 || currentIndex >= results.length - 1 || currentIndex === -1) {
+      return null;
+    }
+
+    return results[currentIndex + 1];
+  }
+
+  /**
+   * Check if there is a previous kanji available
+   * @returns True if previous kanji exists
+   */
+  hasPreviousKanji(): boolean {
+    const currentIndex = this.currentKanjiIndex();
+    return currentIndex > 0;
+  }
+
+  /**
+   * Check if there is a next kanji available
+   * @returns True if next kanji exists
+   */
+  hasNextKanji(): boolean {
+    const results = this.searchResults();
+    const currentIndex = this.currentKanjiIndex();
+    return currentIndex >= 0 && currentIndex < results.length - 1;
+  }
+
+  /**
+   * Update current kanji index when navigating
+   * @param kanjiId The new current kanji ID
+   */
+  updateCurrentKanji(kanjiId: string): void {
+    const results = this.searchResults();
+    const index = results.findIndex(kanji => kanji.id === kanjiId);
+    this.currentKanjiIndex.set(index);
   }
 }

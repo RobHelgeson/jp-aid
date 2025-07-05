@@ -12,7 +12,16 @@ describe('KanjiDetail', () => {
   let fixture: ComponentFixture<KanjiDetail>;
   let mockActivatedRoute: {params: Observable<Params>; queryParams: Observable<Params>};
   let mockRouter: {navigate: jest.Mock};
-  let mockData: {getKanji: jest.Mock; getExampleWords: jest.Mock};
+  let mockData: {
+    getKanji: jest.Mock;
+    getExampleWords: jest.Mock;
+    setSearchResults: jest.Mock;
+    updateCurrentKanji: jest.Mock;
+    getPreviousKanji: jest.Mock;
+    getNextKanji: jest.Mock;
+    hasPreviousKanji: jest.Mock;
+    hasNextKanji: jest.Mock;
+  };
   let paramsSubject: BehaviorSubject<Kanji>;
   let queryParamsSubject: BehaviorSubject<Params>;
 
@@ -29,13 +38,22 @@ describe('KanjiDetail', () => {
     };
     mockData = {
       getKanji: jest.fn(),
-      getExampleWords: jest.fn()
+      getExampleWords: jest.fn(),
+      setSearchResults: jest.fn(),
+      updateCurrentKanji: jest.fn(),
+      getPreviousKanji: jest.fn(),
+      getNextKanji: jest.fn(),
+      hasPreviousKanji: jest.fn(),
+      hasNextKanji: jest.fn()
     };
 
     // Setup mock data
     mockData.getKanji.mockReturnValue([
+      kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた(る)'], 14),
+      kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
       kanjiFixture('水', ['water'], ['スイ'], ['みず'], 4),
-      kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4)
+      kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4),
+      kanjiFixture('人', ['person'], ['ジン', 'ニン'], ['ひと'], 2)
     ]);
 
     // Setup example words mock
@@ -54,6 +72,12 @@ describe('KanjiDetail', () => {
       };
       return exampleWordsMap[kanjiId] || [];
     });
+
+    // Setup navigation mocks
+    mockData.getPreviousKanji.mockReturnValue(kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4));
+    mockData.getNextKanji.mockReturnValue(kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4));
+    mockData.hasPreviousKanji.mockReturnValue(true);
+    mockData.hasNextKanji.mockReturnValue(true);
 
     await TestBed.configureTestingModule({
       imports: [KanjiDetail, NoopAnimationsModule],
@@ -143,6 +167,108 @@ describe('KanjiDetail', () => {
 
     const meanings = compiled.querySelectorAll('.meanings-section mat-chip');
     expect(meanings[0]?.textContent).toContain('fire');
+  });
+
+  describe('Navigation Controls', () => {
+    it('should display navigation buttons with correct labels', () => {
+      const compiled = fixture.nativeElement;
+
+      const previousButton = compiled.querySelector('button[aria-label="Previous kanji"]');
+      expect(previousButton).toBeTruthy();
+      expect(previousButton.textContent).toContain('日'); // Previous kanji character
+
+      const nextButton = compiled.querySelector('button[aria-label="Next kanji"]');
+      expect(nextButton).toBeTruthy();
+      expect(nextButton.textContent).toContain('火'); // Next kanji character
+    });
+
+    it('should disable previous button when no previous kanji is available', () => {
+      // Reset the mocks to return appropriate values
+      mockData.hasPreviousKanji.mockReturnValue(false);
+      mockData.getPreviousKanji.mockReturnValue(null);
+
+      // Create a fresh component instance with updated mocks
+      const freshFixture = TestBed.createComponent(KanjiDetail);
+      const freshComponent = freshFixture.componentInstance;
+      freshFixture.detectChanges();
+
+      const previousButton = freshFixture.nativeElement.querySelector('button[aria-label="Previous kanji"]');
+      expect(previousButton.disabled).toBe(true);
+    });
+
+    it('should disable next button when no next kanji is available', () => {
+      // Reset the mocks to return appropriate values
+      mockData.hasNextKanji.mockReturnValue(false);
+      mockData.getNextKanji.mockReturnValue(null);
+
+      // Create a fresh component instance with updated mocks
+      const freshFixture = TestBed.createComponent(KanjiDetail);
+      const freshComponent = freshFixture.componentInstance;
+      freshFixture.detectChanges();
+
+      const nextButton = freshFixture.nativeElement.querySelector('button[aria-label="Next kanji"]');
+      expect(nextButton.disabled).toBe(true);
+    });
+
+    it('should navigate to previous kanji when previous button is clicked', () => {
+      const previousButton = fixture.nativeElement.querySelector('button[aria-label="Previous kanji"]');
+      previousButton.click();
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/kanji', '日'], {queryParams: {q: 'water'}});
+    });
+
+    it('should navigate to next kanji when next button is clicked', () => {
+      const nextButton = fixture.nativeElement.querySelector('button[aria-label="Next kanji"]');
+      nextButton.click();
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/kanji', '火'], {queryParams: {q: 'water'}});
+    });
+
+    it('should not navigate when previous button is clicked and no previous kanji exists', () => {
+      mockData.getPreviousKanji.mockReturnValue(null);
+      mockData.hasPreviousKanji.mockReturnValue(false);
+      fixture.detectChanges();
+
+      const previousButton = fixture.nativeElement.querySelector('button[aria-label="Previous kanji"]');
+      previousButton.click();
+
+      // Should not navigate since there's no previous kanji
+      expect(mockRouter.navigate).not.toHaveBeenCalledWith(['/kanji', null], expect.any(Object));
+    });
+
+    it('should not navigate when next button is clicked and no next kanji exists', () => {
+      mockData.getNextKanji.mockReturnValue(null);
+      mockData.hasNextKanji.mockReturnValue(false);
+      fixture.detectChanges();
+
+      const nextButton = fixture.nativeElement.querySelector('button[aria-label="Next kanji"]');
+      nextButton.click();
+
+      // Should not navigate since there's no next kanji
+      expect(mockRouter.navigate).not.toHaveBeenCalledWith(['/kanji', null], expect.any(Object));
+    });
+
+    it('should preserve search query in navigation', () => {
+      queryParamsSubject.next({q: 'custom search'});
+      fixture.detectChanges();
+
+      const nextButton = fixture.nativeElement.querySelector('button[aria-label="Next kanji"]');
+      nextButton.click();
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/kanji', '火'], {queryParams: {q: 'custom search'}});
+    });
+
+    it('should update search results context when kanji ID changes', () => {
+      // Change route parameter
+      paramsSubject.next(kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4));
+      fixture.detectChanges();
+
+      expect(mockData.updateCurrentKanji).toHaveBeenCalledWith('火');
+    });
+
+    it('should initialize search results on component load', () => {
+      expect(mockData.setSearchResults).toHaveBeenCalled();
+    });
   });
 
   describe('Enhanced Display Features', () => {
