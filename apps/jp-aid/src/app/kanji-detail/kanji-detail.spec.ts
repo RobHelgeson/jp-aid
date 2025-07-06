@@ -1,3 +1,4 @@
+import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {ActivatedRoute, Params, Router} from '@angular/router';
@@ -67,7 +68,8 @@ describe('KanjiDetail', () => {
       zoomIn: jest.fn(),
       zoomOut: jest.fn(),
       resetGraph: jest.fn(),
-      destroy: jest.fn()
+      destroy: jest.fn(),
+      nodeClicked: signal<string>('')
     };
 
     // Setup mock data
@@ -83,7 +85,7 @@ describe('KanjiDetail', () => {
       const nodes: GraphNode[] = [];
       const edges: GraphEdge[] = [];
 
-      const kanji = mockData.getKanji().find(k => k.id === kanjiId);
+      const kanji = mockData.getKanji().find((k: Kanji) => k.id === kanjiId);
       if (!kanji) {
         return {nodes, edges};
       }
@@ -118,7 +120,7 @@ describe('KanjiDetail', () => {
       edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, '#0000FF', 'has primitive'));
 
       // Mock related Kanji
-      const relatedKanji1 = mockData.getKanji().find(k => k.id === '日');
+      const relatedKanji1 = mockData.getKanji().find((k: Kanji) => k.id === '日');
       if (relatedKanji1) {
         const relatedKanjiNode1: KanjiNode = kanjiNodeFixture(
           relatedKanji1.id,
@@ -149,7 +151,7 @@ describe('KanjiDetail', () => {
           {kanji: '水道', reading: 'すいどう', meaning: 'water supply'}
         ],
         火: [
-          {kanji: '火曜日', reading: 'か���うび', meaning: 'Tuesday'},
+          {kanji: '火曜日', reading: 'かようび', meaning: 'Tuesday'},
           {kanji: '火事', reading: 'かじ', meaning: 'fire'},
           {kanji: '花火', reading: 'はなび', meaning: 'fireworks'}
         ]
