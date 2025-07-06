@@ -10,15 +10,15 @@ import {
 } from '@jp-aid/shared-interfaces/testing';
 
 const NODE_COLORS = {
-  [NodeType.Kanji]: '#FF5733',    // Orange-Red
-  [NodeType.Radical]: '#33FF57',  // Green
-  [NodeType.Primitive]: '#3357FF' // Blue
+  [NodeType.Kanji]: '#6e006e',
+  [NodeType.Radical]: '#a900a9',
+  [NodeType.Primitive]: '#fe00fe'
 };
 
 const EDGE_COLORS = {
-  'has radical': '#888888', // Grey
-  'has primitive': '#AAAAAA', // Light Grey
-  'related': '#CCCCCC'    // Very Light Grey
+  'has radical': '#888888',
+  'has primitive': '#AAAAAA',
+  related: '#CCCCCC'
 };
 
 @Injectable({
@@ -71,11 +71,29 @@ export class MockData {
     edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, EDGE_COLORS['has radical'], 'has radical'));
 
     // Mock primitives
-    const primitive1: PrimitiveNode = primitiveNodeFixture('五', '五', 1, 1, 10, NODE_COLORS[NodeType.Primitive], NodeType.Primitive, 'five');
+    const primitive1: PrimitiveNode = primitiveNodeFixture(
+      '五',
+      '五',
+      1,
+      1,
+      10,
+      NODE_COLORS[NodeType.Primitive],
+      NodeType.Primitive,
+      'five'
+    );
     nodes.push(primitive1);
     edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
 
-    const primitive2: PrimitiveNode = primitiveNodeFixture('口', '口', 1, -1, 10, NODE_COLORS[NodeType.Primitive], NodeType.Primitive, 'mouth');
+    const primitive2: PrimitiveNode = primitiveNodeFixture(
+      '口',
+      '口',
+      1,
+      -1,
+      10,
+      NODE_COLORS[NodeType.Primitive],
+      NodeType.Primitive,
+      'mouth'
+    );
     nodes.push(primitive2);
     edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
 

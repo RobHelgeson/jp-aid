@@ -25,6 +25,10 @@ export class GraphService {
       },
       edgeProgramClasses: {
         default: EdgeLineProgram
+      },
+      labelColor: {
+        attribute: 'color',
+        color: '#000000'
       }
     });
 
