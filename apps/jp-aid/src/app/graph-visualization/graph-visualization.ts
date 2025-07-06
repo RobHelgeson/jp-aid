@@ -1,5 +1,4 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, OnDestroy, ViewChild} from '@angular/core';
-import {toSignal} from '@angular/core/rxjs-interop';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 
@@ -16,13 +15,11 @@ import {GraphService} from '../services/graph/graph.service';
 export class GraphVisualization implements AfterViewInit, OnDestroy {
   @ViewChild('graphContainer') graphContainer!: ElementRef;
   kanjiId = input<string | undefined>(undefined);
-  maxNodes = input<number>(50); // Default limit for nodes
-  maxEdges = input<number>(100); // Default limit for edges
+  maxNodes = input<number>(50);
+  maxEdges = input<number>(100);
 
   private graphService = inject(GraphService);
-  private nodeClicked = toSignal(this.graphService.nodeClicked$);
 
-  // Effect to handle kanjiId changes
   private onKanjiIdChangeEffect = effect(() => {
     const kanjiId = this.kanjiId();
     const maxNodes = this.maxNodes();
@@ -33,9 +30,8 @@ export class GraphVisualization implements AfterViewInit, OnDestroy {
     }
   });
 
-  // Effect to handle node clicks
   private onNodeClickEffect = effect(() => {
-    const nodeId = this.nodeClicked();
+    const nodeId = this.graphService.nodeClicked();
     if (nodeId) {
       console.log('Clicked node from service:', nodeId);
       // Handle node click, e.g., emit an output event or navigate
@@ -56,7 +52,7 @@ export class GraphVisualization implements AfterViewInit, OnDestroy {
 
   ngOnDestroy = (): void => this.graphService.destroy();
 
-  zoomIn = (): void => this.graphService.zoomIn();
-  zoomOut = (): void => this.graphService.zoomOut();
-  resetGraph = (): void => this.graphService.resetGraph();
+  zoomIn = (): Promise<void> | undefined => this.graphService.zoomIn();
+  zoomOut = (): Promise<void> | undefined => this.graphService.zoomOut();
+  resetGraph = (): Promise<void> | undefined => this.graphService.resetGraph();
 }

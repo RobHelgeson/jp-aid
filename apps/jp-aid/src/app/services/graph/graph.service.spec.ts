@@ -1,6 +1,6 @@
 import {TestBed} from '@angular/core/testing';
 import Graphology from 'graphology';
-import Sigma from 'sigma';
+import Sigma, {Camera} from 'sigma';
 
 import {MockData} from '../mock-data.service';
 import {GraphService} from './graph.service';
@@ -8,32 +8,25 @@ import {GraphService} from './graph.service';
 jest.mock('graphology', () => {
   return {
     __esModule: true,
-    default: jest.fn().mockImplementation(() => {
-      return {
-        addNode: jest.fn(),
-        addEdge: jest.fn(),
-        clear: jest.fn()
-      };
-    })
+    default: jest.fn(() => ({
+      addNode: jest.fn(),
+      addEdge: jest.fn(),
+      clear: jest.fn()
+    }))
   };
 });
 
 jest.mock('sigma', () => {
-  const mockCamera = {
-    animatedZoom: jest.fn(),
-    getZoom: jest.fn(() => 1),
-    animate: jest.fn()
-  };
-  const mockSigmaInstance = {
-    setGraph: jest.fn(),
-    kill: jest.fn(),
-    getCamera: jest.fn(() => mockCamera),
-    on: jest.fn(),
-    refresh: jest.fn()
-  };
   return {
     __esModule: true,
-    default: jest.fn(() => mockSigmaInstance)
+    default: jest.fn(() => ({
+      setGraph: jest.fn(),
+      kill: jest.fn(),
+      getCamera: jest.fn(),
+      on: jest.fn(),
+      refresh: jest.fn(),
+      clickNode: jest.fn()
+    }))
   };
 });
 
@@ -46,10 +39,12 @@ jest.mock('sigma/rendering', () => {
 });
 
 describe('GraphService', () => {
+  let container: HTMLElement;
   let service: GraphService;
   let mockMockData: Partial<MockData>;
-  let sigmaInstance: Sigma;
+  let sigmaInstance: Partial<Sigma>;
   let graphologyInstance: Graphology;
+  let camera: Camera;
 
   beforeEach(() => {
     mockMockData = {
@@ -61,8 +56,16 @@ describe('GraphService', () => {
     });
     service = TestBed.inject(GraphService);
 
-    sigmaInstance = (Sigma as jest.Mock).mock.results[0].value;
-    graphologyInstance = (Graphology as jest.Mock).mock.results[0].value;
+    container = document.createElement('div');
+    graphologyInstance = new Graphology();
+    sigmaInstance = new Sigma(graphologyInstance, container, {});
+    camera = {
+      animatedZoom: jest.fn(),
+      animatedUnzoom: jest.fn(),
+      animate: jest.fn()
+    } as unknown as Camera;
+
+    sigmaInstance.getCamera = jest.fn(() => camera);
   });
 
   it('should be created', () => {
@@ -70,57 +73,76 @@ describe('GraphService', () => {
   });
 
   it('should initialize Sigma and Graphology', () => {
-    const container = document.createElement('div');
+    jest.clearAllMocks();
     service.initialize(container);
+
     expect(Graphology).toHaveBeenCalled();
-    expect(Sigma).toHaveBeenCalledWith(graphologyInstance, container, expect.any(Object));
+    expect(Sigma).toHaveBeenCalledWith(service['graphologyInstance'], container, expect.any(Object));
   });
 
   it('should update graph', () => {
-    const container = document.createElement('div');
     service.initialize(container);
+    // @ts-expect-error - we need to spy on the graphologyInstance
+    service.graphologyInstance = graphologyInstance;
+    // @ts-expect-error - we need to spy on the sigmaInstance
+    service.sigmaInstance = sigmaInstance;
     service.updateGraph('testKanjiId', 10, 20);
+
     expect(graphologyInstance.clear).toHaveBeenCalled();
     expect(mockMockData.getGraphData).toHaveBeenCalledWith('testKanjiId');
     expect(sigmaInstance.refresh).toHaveBeenCalled();
   });
 
   it('should call zoomIn', () => {
-    const container = document.createElement('div');
     service.initialize(container);
+    // @ts-expect-error - we need to spy on the camera
+    service.camera = camera;
+
     service.zoomIn();
-    expect(sigmaInstance.getCamera().animatedZoom).toHaveBeenCalled();
+
+    expect(camera.animatedZoom).toHaveBeenCalled();
   });
 
   it('should call zoomOut', () => {
-    const container = document.createElement('div');
     service.initialize(container);
+    // @ts-expect-error - we need to spy on the camera
+    service.camera = camera;
+
     service.zoomOut();
-    expect(sigmaInstance.getCamera().animatedZoom).toHaveBeenCalled();
+
+    expect(camera.animatedUnzoom).toHaveBeenCalled();
   });
 
   it('should call resetGraph', () => {
-    const container = document.createElement('div');
     service.initialize(container);
+    // @ts-expect-error - we need to spy on the camera
+    service.camera = camera;
     service.resetGraph();
-    expect(sigmaInstance.getCamera().animate).toHaveBeenCalled();
+    expect(camera.animate).toHaveBeenCalled();
   });
 
   it('should destroy Sigma and Graphology instances', () => {
-    const container = document.createElement('div');
     service.initialize(container);
+    // @ts-expect-error - we need to spy on the graphologyInstance
+    service.graphologyInstance = graphologyInstance;
+    // @ts-expect-error - we need to spy on the sigmaInstance
+    service.sigmaInstance = sigmaInstance;
     service.destroy();
     expect(sigmaInstance.kill).toHaveBeenCalled();
     expect(graphologyInstance.clear).toHaveBeenCalled();
   });
 
-  it('should emit nodeClicked$ event on clickNode', () => {
-    const container = document.createElement('div');
+  it('should emit nodeClicked event on clickNode', () => {
     service.initialize(container);
-    const spy = jest.spyOn(service.nodeClicked$, 'next');
-    (sigmaInstance.on as jest.Mock).mock.calls[0][1]({
-      node: 'clickedNodeId'
-    });
+    // @ts-expect-error - we need to spy on the sigmaInstance
+    sigmaInstance = service.sigmaInstance;
+    // @ts-expect-error - we need to find the clickNode handler
+    const clickNodeHandler = sigmaInstance?.on.mock.calls.find(call => call[0] === 'clickNode');
+
+    const spy = jest.spyOn(service.nodeClicked, 'set');
+
+    clickNodeHandler?.[1]({node: 'clickedNodeId'});
+
     expect(spy).toHaveBeenCalledWith('clickedNodeId');
   });
 });

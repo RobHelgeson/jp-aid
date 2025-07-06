@@ -9,7 +9,7 @@ import {
   primitiveNodeFixture,
   radicalNodeFixture
 } from '@jp-aid/shared-interfaces/testing';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 import {GraphService} from '../services/graph/graph.service';
 import {MockData} from '../services/mock-data.service';
@@ -67,8 +67,7 @@ describe('KanjiDetail', () => {
       zoomIn: jest.fn(),
       zoomOut: jest.fn(),
       resetGraph: jest.fn(),
-      destroy: jest.fn(),
-      nodeClicked$: new Subject<string>()
+      destroy: jest.fn()
     };
 
     // Setup mock data

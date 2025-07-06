@@ -1,8 +1,7 @@
-import {inject, Injectable} from '@angular/core';
+import {inject, Injectable, signal} from '@angular/core';
 import {GraphEdge, GraphNode, NodeType} from '@jp-aid/shared-interfaces';
 import Graphology from 'graphology';
-import {Subject} from 'rxjs';
-import Sigma from 'sigma';
+import Sigma, {Camera} from 'sigma';
 import {EdgeLineProgram, NodeCircleProgram} from 'sigma/rendering';
 
 import {MockData} from '../mock-data.service';
@@ -11,9 +10,10 @@ import {MockData} from '../mock-data.service';
 export class GraphService {
   private sigmaInstance?: Sigma;
   private graphologyInstance?: Graphology;
+  private camera?: Camera;
   private mockData = inject(MockData);
 
-  public nodeClicked$: Subject<string> = new Subject<string>();
+  public nodeClicked = signal<string>('');
 
   initialize(container: HTMLElement): void {
     this.graphologyInstance = new Graphology();
@@ -28,7 +28,9 @@ export class GraphService {
       }
     });
 
-    this.sigmaInstance.on('clickNode', e => this.nodeClicked$.next(e.node));
+    this.camera = this.sigmaInstance.getCamera();
+
+    this.sigmaInstance.on('clickNode', e => this.nodeClicked.set(e.node));
   }
 
   updateGraph(kanjiId: string, maxNodes: number, maxEdges: number): void {
@@ -51,12 +53,11 @@ export class GraphService {
     this.sigmaInstance.refresh();
   }
 
-  zoomIn = (): Promise<void> | undefined => this.sigmaInstance?.getCamera().animatedZoom({duration: 500});
+  zoomIn = (): Promise<void> | undefined => this.camera?.animatedZoom({duration: 500});
 
-  zoomOut = (): Promise<void> | undefined => this.sigmaInstance?.getCamera().animatedUnzoom({duration: 500});
+  zoomOut = (): Promise<void> | undefined => this.camera?.animatedUnzoom({duration: 500});
 
-  resetGraph = (): Promise<void> | undefined =>
-    this.sigmaInstance?.getCamera().animate({x: 0.5, y: 0.5, ratio: 1, angle: 0}, {duration: 500});
+  resetGraph = (): Promise<void> | undefined => this.camera?.animate({x: 0.5, y: 0.5, ratio: 1, angle: 0}, {duration: 500});
 
   destroy(): void {
     this.sigmaInstance?.kill();

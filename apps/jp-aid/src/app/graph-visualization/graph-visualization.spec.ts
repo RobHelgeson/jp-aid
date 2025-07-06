@@ -1,5 +1,5 @@
+import {ComponentRef, signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {Subject} from 'rxjs';
 
 import {GraphService} from '../services/graph/graph.service';
 import {GraphVisualization} from './graph-visualization';
@@ -10,6 +10,7 @@ jest.mock('sigma/rendering', () => ({}));
 
 describe('GraphVisualization', () => {
   let component: GraphVisualization;
+  let componentRef: ComponentRef<GraphVisualization>;
   let fixture: ComponentFixture<GraphVisualization>;
   let mockGraphService: Partial<GraphService>;
 
@@ -21,7 +22,7 @@ describe('GraphVisualization', () => {
       zoomOut: jest.fn(),
       resetGraph: jest.fn(),
       destroy: jest.fn(),
-      nodeClicked$: new Subject<string>()
+      nodeClicked: signal<string>('')
     };
 
     await TestBed.configureTestingModule({
@@ -31,6 +32,7 @@ describe('GraphVisualization', () => {
 
     fixture = TestBed.createComponent(GraphVisualization);
     component = fixture.componentInstance;
+    componentRef = fixture.componentRef;
     fixture.detectChanges();
   });
 
@@ -39,20 +41,19 @@ describe('GraphVisualization', () => {
   });
 
   it('should initialize graph service on AfterViewInit', () => {
-    component.kanjiId = '語';
+    componentRef.setInput('kanjiId', '語');
     fixture.detectChanges();
     expect(mockGraphService.initialize).toHaveBeenCalledWith(component.graphContainer.nativeElement);
     expect(mockGraphService.updateGraph).toHaveBeenCalledWith('語', 50, 100);
   });
 
   it('should update graph on kanjiId change', () => {
-    component.kanjiId = '語';
+    componentRef.setInput('kanjiId', '語');
     fixture.detectChanges(); // Initial call
     jest.clearAllMocks(); // Clear mocks after initial call
 
-    component.kanjiId = '日';
+    componentRef.setInput('kanjiId', '日');
     fixture.detectChanges();
-    component.ngAfterViewInit();
     expect(mockGraphService.updateGraph).toHaveBeenCalledWith('日', 50, 100);
   });
 
@@ -81,7 +82,8 @@ describe('GraphVisualization', () => {
 
   it('should log clicked node from service', () => {
     const consoleSpy = jest.spyOn(console, 'log');
-    mockGraphService.nodeClicked$?.next('testNodeId');
+    mockGraphService.nodeClicked?.set('testNodeId');
+    fixture.detectChanges();
     expect(consoleSpy).toHaveBeenCalledWith('Clicked node from service:', 'testNodeId');
   });
 });
