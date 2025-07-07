@@ -3,6 +3,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {GraphService} from '../services/graph/graph.service';
 import {GraphVisualization} from './graph-visualization';
+import { BreadcrumbItem, PropertyType } from '@jp-aid/shared-interfaces';
 
 jest.mock('graphology', () => ({}));
 jest.mock('sigma', () => ({}));
@@ -22,7 +23,10 @@ describe('GraphVisualization', () => {
       zoomOut: jest.fn(),
       resetGraph: jest.fn(),
       destroy: jest.fn(),
-      nodeClicked: signal<string>('')
+      nodeClicked: signal<string>(''),
+      selectedPropertyType: signal<PropertyType | null>(null),
+      breadcrumbHistory: signal<BreadcrumbItem[]>([]),
+      resetToOrigin: jest.fn()
     };
 
     await TestBed.configureTestingModule({
@@ -69,10 +73,17 @@ describe('GraphVisualization', () => {
     expect(mockGraphService.zoomOut).toHaveBeenCalled();
   });
 
-  it('should call resetGraph on button click', () => {
-    const resetButton = fixture.nativeElement.querySelector('[aria-label="Reset Graph View"]');
-    resetButton.click();
-    expect(mockGraphService.resetGraph).toHaveBeenCalled();
+  it('should call resetToOrigin on button click', () => {
+    // Use Angular's TestBed utilities to trigger the click event
+    const resetButton = fixture.nativeElement.querySelector('[aria-label="Reset to Origin"]');
+
+    // Create a mock DOM event
+    const event = new MouseEvent('click', { bubbles: true });
+
+    // Dispatch the event on the button element
+    resetButton.dispatchEvent(event);
+
+    expect(mockGraphService.resetToOrigin).toHaveBeenCalled();
   });
 
   it('should destroy graph service on component destroy', () => {

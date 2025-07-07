@@ -1,0 +1,48 @@
+.breadcrumb-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .breadcrumb-item {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1.5rem;
+    background-color: transparent;
+    color: var(--mat-primary-text);
+    transition: background-color 0.3s;
+
+    &.kanji-node {
+      color: #6e006e;
+      /* Kanji color */
+    }
+
+    &.feature-node {
+      color: #a900a9;
+      /* Feature color */
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  mat-icon {
+    font-size: 1rem;
+    color: var(--mat-secondary-text);
+  }
+}
+
+@media (max-width: 600px) {
+  .breadcrumb-container {
+    gap: 0.25rem;
+
+    .breadcrumb-item {
+      padding: 0.25rem 0.4rem;
+      font-size: 0.75rem;
+    }
+
+    mat-icon {
+      font-size: 0.875rem;
+    }
+  }
+}

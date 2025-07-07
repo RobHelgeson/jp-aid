@@ -1,5 +1,23 @@
 <div class="graph-container">
+  <!-- Property Type Selector -->
+  <div class="property-selector">
+    <mat-label>Relationship Type:</mat-label>
+    <mat-select [value]="selectedPropertyType()" (selectionChange)="onPropertyTypeChange($event.value)">
+      @for(type of propertyTypes; track type) {
+        <mat-option [value]="type">
+          {{ type | titlecase }}
+        </mat-option>
+      }
+    </mat-select>
+  </div>
+
+  <!-- Breadcrumb Navigation -->
+  <kl-breadcrumb-navigation class="breadcrumb" [breadcrumbs]="breadcrumbHistory()"></kl-breadcrumb-navigation>
+
+  <!-- Graph Canvas -->
   <div #graphContainer class="graph-canvas"></div>
+
+  <!-- Graph Controls -->
   <div class="graph-controls">
     <button mat-icon-button (click)="zoomIn()" aria-label="Zoom In">
       <mat-icon>zoom_in</mat-icon>
@@ -7,8 +25,8 @@
     <button mat-icon-button (click)="zoomOut()" aria-label="Zoom Out">
       <mat-icon>zoom_out</mat-icon>
     </button>
-    <button mat-icon-button (click)="resetGraph()" aria-label="Reset Graph View">
-      <mat-icon>center_focus_strong</mat-icon>
+    <button mat-icon-button (click)="resetToOrigin()" aria-label="Reset to Origin">
+      <mat-icon>refresh</mat-icon>
     </button>
   </div>
 </div>

@@ -1,0 +1,11 @@
+<div class="breadcrumb-container">
+  @for(breadcrumb of breadcrumbs(); track breadcrumb.label) {
+    <button mat-icon-button [disabled]="last" (click)="breadcrumb.navigate?.()" class="breadcrumb-item"
+      [ngClass]="{'kanji-node': breadcrumb.type === 'kanji', 'feature-node': breadcrumb.type !== 'kanji'}">
+      {{ breadcrumb.label }}
+    </button>
+    @if(!last) {
+      <mat-icon>chevron_right</mat-icon>
+    }
+  }
+</div>

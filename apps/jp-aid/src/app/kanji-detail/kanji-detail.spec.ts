@@ -2,7 +2,7 @@ import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {ActivatedRoute, Params, Router} from '@angular/router';
-import {GraphEdge, GraphNode, Kanji, KanjiNode, NodeType, PrimitiveNode, RadicalNode} from '@jp-aid/shared-interfaces';
+import {BreadcrumbItem, GraphEdge, GraphNode, Kanji, KanjiNode, NodeType, PrimitiveNode, PropertyType, RadicalNode} from '@jp-aid/shared-interfaces';
 import {
   graphEdgeFixture,
   kanjiFixture,
@@ -69,7 +69,10 @@ describe('KanjiDetail', () => {
       zoomOut: jest.fn(),
       resetGraph: jest.fn(),
       destroy: jest.fn(),
-      nodeClicked: signal<string>('')
+      nodeClicked: signal<string>(''),
+      selectedPropertyType: signal<PropertyType | null>(null),
+      breadcrumbHistory: signal<BreadcrumbItem[]>([]),
+      filterGraphByProperty: jest.fn()
     };
 
     // Setup mock data
@@ -276,7 +279,6 @@ describe('KanjiDetail', () => {
 
       // Create a fresh component instance with updated mocks
       const freshFixture = TestBed.createComponent(KanjiDetail);
-      const freshComponent = freshFixture.componentInstance;
       freshFixture.detectChanges();
 
       const previousButton = freshFixture.nativeElement.querySelector('button[aria-label="Previous kanji"]');
@@ -290,7 +292,6 @@ describe('KanjiDetail', () => {
 
       // Create a fresh component instance with updated mocks
       const freshFixture = TestBed.createComponent(KanjiDetail);
-      const freshComponent = freshFixture.componentInstance;
       freshFixture.detectChanges();
 
       const nextButton = freshFixture.nativeElement.querySelector('button[aria-label="Next kanji"]');

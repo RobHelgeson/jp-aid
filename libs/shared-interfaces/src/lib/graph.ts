@@ -14,12 +14,20 @@ export interface GraphEdge {
   size: number;
   color: string;
   label: string;
+  property?: PropertyType; // Add property type to edge
 }
 
 export enum NodeType {
   Kanji = 'kanji',
   Radical = 'radical',
   Primitive = 'primitive'
+}
+
+export enum PropertyType {
+  Radical = 'radical',
+  Primitive = 'primitive',
+  OnYomi = 'on_yomi',
+  KunYomi = 'kun_yomi'
 }
 
 export interface KanjiNode extends GraphNode {

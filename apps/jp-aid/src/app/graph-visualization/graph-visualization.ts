@@ -1,13 +1,21 @@
+
+
+
 import {AfterViewInit, ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, OnDestroy, ViewChild} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {MatSelectModule} from '@angular/material/select';
+import {MatOptionModule} from '@angular/material/core';
 
 import {GraphService} from '../services/graph/graph.service';
+import {BreadcrumbNavigationComponent} from '../breadcrumb-navigation/breadcrumb-navigation.component';
+import {PropertyType} from '@jp-aid/shared-interfaces';
+import {TitleCasePipe} from '@angular/common';
 
 @Component({
   selector: 'kl-graph-visualization',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, MatSelectModule, MatOptionModule, BreadcrumbNavigationComponent, TitleCasePipe],
   templateUrl: './graph-visualization.html',
   styleUrls: ['./graph-visualization.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -19,6 +27,18 @@ export class GraphVisualization implements AfterViewInit, OnDestroy {
   maxEdges = input<number>(100);
 
   private graphService = inject(GraphService);
+
+  // Property types for the dropdown selector
+  propertyTypes: PropertyType[] = [
+    PropertyType.Radical,
+    PropertyType.Primitive,
+    PropertyType.OnYomi,
+    PropertyType.KunYomi
+  ];
+
+  // Reactive properties
+  selectedPropertyType = this.graphService.selectedPropertyType;
+  breadcrumbHistory = this.graphService.breadcrumbHistory;
 
   private onKanjiIdChangeEffect = effect(() => {
     const kanjiId = this.kanjiId();
@@ -35,6 +55,24 @@ export class GraphVisualization implements AfterViewInit, OnDestroy {
     if (nodeId) {
       console.log('Clicked node from service:', nodeId);
       // Handle node click, e.g., emit an output event or navigate
+    }
+  });
+
+  private onPropertyTypeChangeEffect = effect(() => {
+    const propertyType = this.selectedPropertyType();
+    if (propertyType) {
+      this.graphService.filterGraphByProperty(propertyType);
+
+      // Update breadcrumb history when property type changes
+      const currentBreadcrumbs = this.breadcrumbHistory();
+      this.breadcrumbHistory.set([
+        ...currentBreadcrumbs,
+        {
+          label: `Filter: ${propertyType}`,
+          type: 'feature',
+          navigate: () => this.graphService.restoreGraphState()
+        }
+      ]);
     }
   });
 
@@ -55,4 +93,14 @@ export class GraphVisualization implements AfterViewInit, OnDestroy {
   zoomIn = (): Promise<void> | undefined => this.graphService.zoomIn();
   zoomOut = (): Promise<void> | undefined => this.graphService.zoomOut();
   resetGraph = (): Promise<void> | undefined => this.graphService.resetGraph();
+
+  onPropertyTypeChange(propertyType: PropertyType): void {
+    this.selectedPropertyType.set(propertyType);
+  }
+
+  resetToOrigin(): void {
+    this.graphService.resetToOrigin();
+  }
 }
+
+

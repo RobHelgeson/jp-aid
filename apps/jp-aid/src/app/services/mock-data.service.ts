@@ -1,5 +1,15 @@
 import {Injectable, signal} from '@angular/core';
-import {ExampleWord, GraphEdge, GraphNode, Kanji, KanjiNode, NodeType, PrimitiveNode, RadicalNode} from '@jp-aid/shared-interfaces';
+import {
+  ExampleWord,
+  GraphEdge,
+  GraphNode,
+  Kanji,
+  KanjiNode,
+  NodeType,
+  PrimitiveNode,
+  RadicalNode,
+  PropertyType
+} from '@jp-aid/shared-interfaces';
 import {
   exampleWordFixture,
   graphEdgeFixture,
@@ -68,7 +78,7 @@ export class MockData {
     // Mock radicals
     const radical1: RadicalNode = radicalNodeFixture('言', '言', -1, 1, 10, NODE_COLORS[NodeType.Radical], NodeType.Radical, 7, ['speech']);
     nodes.push(radical1);
-    edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, EDGE_COLORS['has radical'], 'has radical'));
+    edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, EDGE_COLORS['has radical'], 'has radical', PropertyType.Radical));
 
     // Mock primitives
     const primitive1: PrimitiveNode = primitiveNodeFixture(
@@ -82,7 +92,7 @@ export class MockData {
       'five'
     );
     nodes.push(primitive1);
-    edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
+    edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, EDGE_COLORS['has primitive'], 'has primitive', [PropertyType].Primitive));
 
     const primitive2: PrimitiveNode = primitiveNodeFixture(
       '口',
@@ -95,7 +105,7 @@ export class MockData {
       'mouth'
     );
     nodes.push(primitive2);
-    edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
+    edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, EDGE_COLORS['has primitive'], 'has primitive', PropertyType.Primitive));
 
     // Mock related Kanji
     const relatedKanji1 = this.getKanji().find(k => k.id === '日');
@@ -118,6 +128,85 @@ export class MockData {
     }
 
     return {nodes, edges};
+  };
+
+  getGraphDataByProperty = (propertyType: PropertyType): {nodes: GraphNode[]; edges: GraphEdge[]} => {
+    const nodes: GraphNode[] = [];
+    const edges: GraphEdge[] = [];
+
+    // Get all kanji
+    const kanjiList = this.getKanji();
+
+    // For demonstration, we'll just use the first kanji and filter its edges
+    const kanji = kanjiList[0];
+
+    if (!kanji) {
+      return {nodes, edges};
+    }
+
+    const kanjiNode: KanjiNode = kanjiNodeFixture(
+      kanji.id,
+      kanji.id,
+      0,
+      0,
+      20,
+      NODE_COLORS[NodeType.Kanji],
+      NodeType.Kanji,
+      kanji.meaning.join(', '),
+      kanji.onReadings,
+      kanji.kunReadings,
+      kanji.strokeCount
+    );
+    nodes.push(kanjiNode);
+
+    // Filter edges based on property type
+    const graphData = this.getGraphData(kanji.id);
+    graphData.edges.forEach(edge => {
+      if (edge.property === propertyType) {
+        edges.push(edge);
+
+        // Add the connected node if it doesn't already exist
+        const sourceNode = graphData.nodes.find(node => node.id === edge.source);
+        const targetNode = graphData.nodes.find(node => node.id === edge.target);
+
+        if (sourceNode && !nodes.some(n => n.id === sourceNode.id)) {
+          nodes.push(sourceNode);
+        }
+
+        if (targetNode && !nodes.some(n => n.id === targetNode.id)) {
+          nodes.push(targetNode);
+        }
+      }
+    });
+
+    return {nodes, edges};
+  };
+
+  getInitialGraphData = (): {nodes: GraphNode[]; edges: GraphEdge[]} => {
+    // For demonstration, we'll just use the first kanji
+    const kanjiList = this.getKanji();
+    if (kanjiList.length === 0) return {nodes: [], edges: []};
+
+    return this.getGraphData(kanjiList[0].id);
+  };
+
+  getNodeById = (nodeId: string): GraphNode | null => {
+    const kanjiList = this.getKanji();
+    if (kanjiList.length === 0) return null;
+
+    const graphData = this.getGraphData(kanjiList[0].id);
+    return graphData.nodes.find(node => node.id === nodeId) || null;
+  };
+
+  getEdgeData = (source: string, target: string): GraphEdge | null => {
+    const kanjiList = this.getKanji();
+    if (kanjiList.length === 0) return null;
+
+    const graphData = this.getGraphData(kanjiList[0].id);
+    return graphData.edges.find(edge =>
+      (edge.source === source && edge.target === target) ||
+      (edge.source === target && edge.target === source)
+    ) || null;
   };
 
   /**
@@ -231,3 +320,5 @@ export class MockData {
     this.currentKanjiIndex.set(index);
   };
 }
+
+
