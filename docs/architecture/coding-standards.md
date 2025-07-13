@@ -40,6 +40,7 @@
         - Selector prefix: `kl-` (e.g., `kl-kanji-detail`)
         - Class name: PascalCase without suffix (e.g., `KanjiDetail`)
         - File name: kebab-case with type suffix (e.g., `kanji-detail.ts`)
+        - components will be in folders with their same name e.g. `/app/component-name/component-name.ts`
 
     3. **Signal-Based State Management**: Use signals for reactive state
 

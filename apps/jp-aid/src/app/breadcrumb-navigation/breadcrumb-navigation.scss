@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.breadcrumb-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+.kanji-node {
+  font-weight: bold;
+}
+
+.property-type {
+  font-style: italic;
+  color: #666;
+  margin: 0 4px;
+}
+
+button {
+  min-width: auto;
+  padding: 0 4px;
+}

@@ -1,0 +1,17 @@
+<div class="breadcrumb-container">
+  <button mat-icon-button (click)="onReset()" aria-label="Reset to origin">
+    <mat-icon>home</mat-icon>
+  </button>
+  @for (item of items; track item.nodeId; let last = $last) {
+    <button mat-button (click)="onBreadcrumbClick(item)" [disabled]="last">
+      <span [class.kanji-node]="item.type === 'kanji'">{{ item.label }}</span>
+    </button>
+    @if (!last) {
+      <mat-icon>chevron_right</mat-icon>
+    }
+    @if (item.property && !last) {
+      <span class="property-type">{{ item.property }}</span>
+      <mat-icon>chevron_right</mat-icon>
+    }
+  }
+</div>

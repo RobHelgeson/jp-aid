@@ -1,4 +1,5 @@
 import {TestBed} from '@angular/core/testing';
+import {BreadcrumbNodeType, PropertyType} from '@jp-aid/shared-interfaces';
 import Graphology from 'graphology';
 import Sigma, {Camera} from 'sigma';
 
@@ -11,7 +12,8 @@ jest.mock('graphology', () => {
     default: jest.fn(() => ({
       addNode: jest.fn(),
       addEdge: jest.fn(),
-      clear: jest.fn()
+      clear: jest.fn(),
+      getNodeAttribute: jest.fn()
     }))
   };
 });
@@ -41,18 +43,18 @@ jest.mock('sigma/rendering', () => {
 describe('GraphService', () => {
   let container: HTMLElement;
   let service: GraphService;
-  let mockMockData: Partial<MockData>;
+  let mockData: Partial<MockData>;
   let sigmaInstance: Partial<Sigma>;
   let graphologyInstance: Graphology;
   let camera: Camera;
 
   beforeEach(() => {
-    mockMockData = {
+    mockData = {
       getGraphData: jest.fn(() => ({nodes: [], edges: []}))
     };
 
     TestBed.configureTestingModule({
-      providers: [GraphService, {provide: MockData, useValue: mockMockData}]
+      providers: [GraphService, {provide: MockData, useValue: mockData}]
     });
     service = TestBed.inject(GraphService);
 
@@ -80,19 +82,22 @@ describe('GraphService', () => {
     expect(Sigma).toHaveBeenCalledWith(service['graphologyInstance'], container, expect.any(Object));
   });
 
-  it('should update graph', () => {
+  it('should update graph with property type', () => {
     service.initialize(container);
+
     // @ts-expect-error - we need to spy on the graphologyInstance
     service.graphologyInstance = graphologyInstance;
+
     // @ts-expect-error - we need to spy on the sigmaInstance
     service.sigmaInstance = sigmaInstance;
-    service.updateGraph('testKanjiId', 10, 20);
+
+    const getGraphDataSpy = jest.spyOn(mockData, 'getGraphData').mockReturnValue({nodes: [], edges: []});
+    service.updateGraph('語', PropertyType.ON_YOMI);
 
     expect(graphologyInstance.clear).toHaveBeenCalled();
-    expect(mockMockData.getGraphData).toHaveBeenCalledWith('testKanjiId');
+    expect(getGraphDataSpy).toHaveBeenCalledWith('語', PropertyType.ON_YOMI);
     expect(sigmaInstance.refresh).toHaveBeenCalled();
   });
-
   it('should call zoomIn', () => {
     service.initialize(container);
     // @ts-expect-error - we need to spy on the camera
@@ -121,6 +126,28 @@ describe('GraphService', () => {
     expect(camera.animate).toHaveBeenCalled();
   });
 
+  it('should reset to origin', () => {
+    service.initialize(container);
+    const updateGraphSpy = jest.spyOn(service, 'updateGraph');
+    service.resetToOrigin('語', PropertyType.RADICAL);
+    // @ts-expect-error - we need to test private method
+    expect(service.history()).toEqual([{nodeId: '語', property: PropertyType.RADICAL}]);
+    expect(updateGraphSpy).toHaveBeenCalledWith('語', PropertyType.RADICAL);
+  });
+
+  it('should navigate to a previous state', () => {
+    service.initialize(container);
+    const updateGraphSpy = jest.spyOn(service, 'updateGraph');
+    // @ts-expect-error - we need to test private method
+    service.history.set([
+      {nodeId: '語', property: PropertyType.ON_YOMI},
+      {nodeId: '日', property: PropertyType.ON_YOMI}
+    ]);
+    service.navigateToState('語');
+    expect(service.getHistory().length).toBe(1);
+    expect(updateGraphSpy).toHaveBeenCalledWith('語', PropertyType.ON_YOMI);
+  });
+
   it('should destroy Sigma and Graphology instances', () => {
     service.initialize(container);
     // @ts-expect-error - we need to spy on the graphologyInstance
@@ -134,6 +161,9 @@ describe('GraphService', () => {
 
   it('should emit nodeClicked event on clickNode', () => {
     service.initialize(container);
+    graphologyInstance.getNodeAttribute = jest.fn().mockReturnValue(BreadcrumbNodeType.KANJI);
+    // @ts-expect-error - we need to spy on the graphologyInstance
+    service.graphologyInstance = graphologyInstance;
     // @ts-expect-error - we need to spy on the sigmaInstance
     sigmaInstance = service.sigmaInstance;
     // @ts-expect-error - we need to find the clickNode handler
@@ -141,8 +171,8 @@ describe('GraphService', () => {
 
     const spy = jest.spyOn(service.nodeClicked, 'set');
 
-    clickNodeHandler?.[1]({node: 'clickedNodeId'});
+    clickNodeHandler?.[1]({node: '日'});
 
-    expect(spy).toHaveBeenCalledWith('clickedNodeId');
+    expect(spy).toHaveBeenCalledWith({id: '日', type: BreadcrumbNodeType.KANJI});
   });
 });

@@ -1,14 +1,36 @@
-<div class="graph-container">
-  <div #graphContainer class="graph-canvas"></div>
-  <div class="graph-controls">
-    <button mat-icon-button (click)="zoomIn()" aria-label="Zoom In">
-      <mat-icon>zoom_in</mat-icon>
-    </button>
-    <button mat-icon-button (click)="zoomOut()" aria-label="Zoom Out">
-      <mat-icon>zoom_out</mat-icon>
-    </button>
-    <button mat-icon-button (click)="resetGraph()" aria-label="Reset Graph View">
-      <mat-icon>center_focus_strong</mat-icon>
-    </button>
+<div class="graph-visualization-wrapper">
+  <kl-breadcrumb-navigation
+    [items]="breadcrumbItems()"
+    (breadcrumbClick)="onBreadcrumbClick($event)"
+    (reset)="onReset()"
+  ></kl-breadcrumb-navigation>
+  <div class="graph-container">
+    <div #graphContainer class="graph-canvas"></div>
+    <div class="graph-controls">
+      <mat-form-field>
+        <mat-label>Relationship</mat-label>
+        <mat-select
+          [value]="selectedPropertyType()"
+          (selectionChange)="onPropertyTypeChange($event.value)"
+        >
+          @for (property of propertyTypes; track property) {
+          <mat-option [value]="property">{{ property }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button mat-icon-button (click)="zoomIn()" aria-label="Zoom In">
+        <mat-icon>zoom_in</mat-icon>
+      </button>
+      <button mat-icon-button (click)="zoomOut()" aria-label="Zoom Out">
+        <mat-icon>zoom_out</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        (click)="resetGraph()"
+        aria-label="Reset Graph View"
+      >
+        <mat-icon>center_focus_strong</mat-icon>
+      </button>
+    </div>
   </div>
 </div>

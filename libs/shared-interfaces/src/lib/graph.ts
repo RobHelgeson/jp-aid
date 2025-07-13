@@ -19,7 +19,8 @@ export interface GraphEdge {
 export enum NodeType {
   Kanji = 'kanji',
   Radical = 'radical',
-  Primitive = 'primitive'
+  Primitive = 'primitive',
+  Feature = 'feature'
 }
 
 export interface KanjiNode extends GraphNode {
@@ -36,4 +37,28 @@ export interface RadicalNode extends GraphNode {
 
 export interface PrimitiveNode extends GraphNode {
   meaning: string;
+}
+
+export enum PropertyType {
+  ON_YOMI = "on'yomi",
+  KUN_YOMI = "kun'yomi",
+  RADICAL = 'radical',
+  PRIMITIVE = 'primitive'
+}
+
+export enum BreadcrumbNodeType {
+  KANJI = 'kanji',
+  FEATURE = 'feature'
+}
+
+export interface BreadcrumbItem {
+  label: string;
+  type: BreadcrumbNodeType;
+  property?: PropertyType;
+  nodeId: string;
+}
+
+export interface NavigationState {
+  nodeId: string;
+  property: PropertyType;
 }

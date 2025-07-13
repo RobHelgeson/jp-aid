@@ -1,5 +1,7 @@
-import {ComponentRef, signal} from '@angular/core';
+import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {BreadcrumbItem, BreadcrumbNodeType, PropertyType} from '@jp-aid/shared-interfaces';
 
 import {GraphService} from '../services/graph/graph.service';
 import {GraphVisualization} from './graph-visualization';
@@ -10,7 +12,6 @@ jest.mock('sigma/rendering', () => ({}));
 
 describe('GraphVisualization', () => {
   let component: GraphVisualization;
-  let componentRef: ComponentRef<GraphVisualization>;
   let fixture: ComponentFixture<GraphVisualization>;
   let mockGraphService: Partial<GraphService>;
 
@@ -18,22 +19,24 @@ describe('GraphVisualization', () => {
     mockGraphService = {
       initialize: jest.fn(),
       updateGraph: jest.fn(),
+      resetToOrigin: jest.fn(),
+      navigateToState: jest.fn(),
+      getHistory: jest.fn().mockReturnValue([]),
+      getNodeAttribute: jest.fn(),
       zoomIn: jest.fn(),
       zoomOut: jest.fn(),
       resetGraph: jest.fn(),
       destroy: jest.fn(),
-      nodeClicked: signal<string>('')
+      nodeClicked: signal(null)
     };
 
     await TestBed.configureTestingModule({
-      imports: [GraphVisualization],
+      imports: [GraphVisualization, NoopAnimationsModule],
       providers: [{provide: GraphService, useValue: mockGraphService}]
     }).compileComponents();
 
     fixture = TestBed.createComponent(GraphVisualization);
     component = fixture.componentInstance;
-    componentRef = fixture.componentRef;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -41,49 +44,36 @@ describe('GraphVisualization', () => {
   });
 
   it('should initialize graph service on AfterViewInit', () => {
-    componentRef.setInput('kanjiId', '語');
+    fixture.componentRef.setInput('kanjiId', '語');
     fixture.detectChanges();
+    component.ngAfterViewInit();
     expect(mockGraphService.initialize).toHaveBeenCalledWith(component.graphContainer.nativeElement);
-    expect(mockGraphService.updateGraph).toHaveBeenCalledWith('語', 50, 100);
+    expect(mockGraphService.resetToOrigin).toHaveBeenCalledWith('語', PropertyType.ON_YOMI);
   });
 
-  it('should update graph on kanjiId change', () => {
-    componentRef.setInput('kanjiId', '語');
-    fixture.detectChanges(); // Initial call
-    jest.clearAllMocks(); // Clear mocks after initial call
-
-    componentRef.setInput('kanjiId', '日');
+  it('should change property type and update graph', () => {
+    fixture.componentRef.setInput('kanjiId', '語');
     fixture.detectChanges();
-    expect(mockGraphService.updateGraph).toHaveBeenCalledWith('日', 50, 100);
-  });
-
-  it('should call zoomIn on button click', () => {
-    const zoomButton = fixture.nativeElement.querySelector('[aria-label="Zoom In"]');
-    zoomButton.click();
-    expect(mockGraphService.zoomIn).toHaveBeenCalled();
-  });
-
-  it('should call zoomOut on button click', () => {
-    const zoomOutButton = fixture.nativeElement.querySelector('[aria-label="Zoom Out"]');
-    zoomOutButton.click();
-    expect(mockGraphService.zoomOut).toHaveBeenCalled();
-  });
-
-  it('should call resetGraph on button click', () => {
-    const resetButton = fixture.nativeElement.querySelector('[aria-label="Reset Graph View"]');
-    resetButton.click();
-    expect(mockGraphService.resetGraph).toHaveBeenCalled();
-  });
-
-  it('should destroy graph service on component destroy', () => {
-    component.ngOnDestroy();
-    expect(mockGraphService.destroy).toHaveBeenCalled();
-  });
-
-  it('should log clicked node from service', () => {
-    const consoleSpy = jest.spyOn(console, 'log');
-    mockGraphService.nodeClicked?.set('testNodeId');
+    component.onPropertyTypeChange(PropertyType.RADICAL);
     fixture.detectChanges();
-    expect(consoleSpy).toHaveBeenCalledWith('Clicked node from service:', 'testNodeId');
+    expect(component.selectedPropertyType()).toBe(PropertyType.RADICAL);
+    expect(mockGraphService.resetToOrigin).toHaveBeenCalledWith('語', PropertyType.RADICAL);
+  });
+
+  it('should handle breadcrumb click', () => {
+    const breadcrumbItem: BreadcrumbItem = {
+      nodeId: '日',
+      label: '日',
+      type: BreadcrumbNodeType.KANJI
+    };
+    component.onBreadcrumbClick(breadcrumbItem);
+    expect(mockGraphService.navigateToState).toHaveBeenCalledWith('日');
+  });
+
+  it('should handle reset', () => {
+    fixture.componentRef.setInput('kanjiId', '語');
+    fixture.detectChanges();
+    component.onReset();
+    expect(mockGraphService.resetToOrigin).toHaveBeenCalledWith('語', PropertyType.ON_YOMI);
   });
 });

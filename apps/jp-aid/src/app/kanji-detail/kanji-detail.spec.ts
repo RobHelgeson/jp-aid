@@ -69,7 +69,11 @@ describe('KanjiDetail', () => {
       zoomOut: jest.fn(),
       resetGraph: jest.fn(),
       destroy: jest.fn(),
-      nodeClicked: signal<string>('')
+      nodeClicked: signal(null),
+      resetToOrigin: jest.fn(),
+      navigateToState: jest.fn(),
+      getHistory: jest.fn().mockReturnValue([]),
+      getNodeAttribute: jest.fn(),
     };
 
     // Setup mock data

@@ -1,5 +1,15 @@
 import {Injectable, signal} from '@angular/core';
-import {ExampleWord, GraphEdge, GraphNode, Kanji, KanjiNode, NodeType, PrimitiveNode, RadicalNode} from '@jp-aid/shared-interfaces';
+import {
+  ExampleWord,
+  GraphEdge,
+  GraphNode,
+  Kanji,
+  KanjiNode,
+  NodeType,
+  PrimitiveNode,
+  PropertyType,
+  RadicalNode
+} from '@jp-aid/shared-interfaces';
 import {
   exampleWordFixture,
   graphEdgeFixture,
@@ -12,13 +22,16 @@ import {
 const NODE_COLORS = {
   [NodeType.Kanji]: '#6e006e',
   [NodeType.Radical]: '#a900a9',
-  [NodeType.Primitive]: '#fe00fe'
+  [NodeType.Primitive]: '#fe00fe',
+  [NodeType.Feature]: '#ff00ff'
 };
 
 const EDGE_COLORS = {
   'has radical': '#888888',
   'has primitive': '#AAAAAA',
-  related: '#CCCCCC'
+  related: '#CCCCCC',
+  'has on_yomi': '#888888',
+  'has kun_yomi': '#888888'
 };
 
 @Injectable({
@@ -38,10 +51,10 @@ export class MockData {
     kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4),
     kanjiFixture('木', ['tree', 'wood'], ['モク', 'ボク'], ['き'], 4),
     kanjiFixture('金', ['gold', 'money'], ['キン', 'コン'], ['かね'], 8),
-    kanjiFixture('土', ['earth', 'soil'], ['ド', 'ト'], ['つち'], 3)
+    kanjiFixture('土', ['earth', 'soil'], ['ド', 'ト'], ['���ち'], 3)
   ];
 
-  getGraphData = (kanjiId: string): {nodes: GraphNode[]; edges: GraphEdge[]} => {
+  getGraphData = (kanjiId: string, property: PropertyType): {nodes: GraphNode[]; edges: GraphEdge[]} => {
     const nodes: GraphNode[] = [];
     const edges: GraphEdge[] = [];
 
@@ -65,56 +78,60 @@ export class MockData {
     );
     nodes.push(kanjiNode);
 
-    // Mock radicals
-    const radical1: RadicalNode = radicalNodeFixture('言', '言', -1, 1, 10, NODE_COLORS[NodeType.Radical], NodeType.Radical, 7, ['speech']);
-    nodes.push(radical1);
-    edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, EDGE_COLORS['has radical'], 'has radical'));
-
-    // Mock primitives
-    const primitive1: PrimitiveNode = primitiveNodeFixture(
-      '五',
-      '五',
-      1,
-      1,
-      10,
-      NODE_COLORS[NodeType.Primitive],
-      NodeType.Primitive,
-      'five'
-    );
-    nodes.push(primitive1);
-    edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
-
-    const primitive2: PrimitiveNode = primitiveNodeFixture(
-      '口',
-      '口',
-      1,
-      -1,
-      10,
-      NODE_COLORS[NodeType.Primitive],
-      NodeType.Primitive,
-      'mouth'
-    );
-    nodes.push(primitive2);
-    edges.push(graphEdgeFixture(kanji.id, primitive2.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
-
-    // Mock related Kanji
-    const relatedKanji1 = this.getKanji().find(k => k.id === '日');
-    if (relatedKanji1) {
-      const relatedKanjiNode1: KanjiNode = kanjiNodeFixture(
-        relatedKanji1.id,
-        relatedKanji1.id,
-        -2,
-        0,
-        15,
-        NODE_COLORS[NodeType.Kanji],
-        NodeType.Kanji,
-        relatedKanji1.meaning.join(', '),
-        relatedKanji1.onReadings,
-        relatedKanji1.kunReadings,
-        relatedKanji1.strokeCount
-      );
-      nodes.push(relatedKanjiNode1);
-      edges.push(graphEdgeFixture(kanji.id, relatedKanjiNode1.id, 2, EDGE_COLORS['related'], 'related'));
+    switch (property) {
+      case PropertyType.RADICAL:
+        const radical1: RadicalNode = radicalNodeFixture('言', '言', -1, 1, 10, NODE_COLORS[NodeType.Radical], NodeType.Radical, 7, [
+          'speech'
+        ]);
+        nodes.push(radical1);
+        edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, EDGE_COLORS['has radical'], 'has radical'));
+        break;
+      case PropertyType.PRIMITIVE:
+        const primitive1: PrimitiveNode = primitiveNodeFixture(
+          '五',
+          '五',
+          1,
+          1,
+          10,
+          NODE_COLORS[NodeType.Primitive],
+          NodeType.Primitive,
+          'five'
+        );
+        nodes.push(primitive1);
+        edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
+        break;
+      case PropertyType.ON_YOMI:
+        kanji.onReadings.forEach((reading, i) => {
+          const readingNode = primitiveNodeFixture(
+            reading,
+            reading,
+            -1 + i * 1,
+            1,
+            10,
+            NODE_COLORS[NodeType.Feature],
+            NodeType.Feature,
+            'on-yomi'
+          );
+          nodes.push(readingNode);
+          edges.push(graphEdgeFixture(kanji.id, readingNode.id, 2, EDGE_COLORS['has on_yomi'], 'has on_yomi'));
+        });
+        break;
+      case PropertyType.KUN_YOMI:
+        kanji.kunReadings.forEach((reading, i) => {
+          const readingNode = primitiveNodeFixture(
+            reading,
+            reading,
+            -1 + i * 1,
+            1,
+            10,
+            NODE_COLORS[NodeType.Feature],
+            NodeType.Feature,
+            'kun-yomi'
+          );
+          nodes.push(readingNode);
+          edges.push(graphEdgeFixture(kanji.id, readingNode.id, 2, EDGE_COLORS['has kun_yomi'], 'has kun_yomi'));
+        });
+        break;
     }
 
     return {nodes, edges};
@@ -140,7 +157,7 @@ export class MockData {
       本: [
         exampleWordFixture('日本', 'にっぽん', 'Japan'),
         exampleWordFixture('本当', 'ほんとう', 'really'),
-        exampleWordFixture('教科書', 'きょうかしょ', 'textbook')
+        exampleWordFixture('教科書', 'きょう��しょ', 'textbook')
       ],
       水: [
         exampleWordFixture('水曜日', 'すいようび', 'Wednesday'),
