@@ -1,4 +1,4 @@
-<div class="graph-visualization-wrapper">
+<div class="graph-visualization-wrapper" role="region" aria-label="Kanji relationship graph visualization">
   <kl-breadcrumb-navigation
     [items]="breadcrumbItems()"
     (breadcrumbClick)="onBreadcrumbClick($event)"
@@ -6,7 +6,12 @@
     (expandRequest)="onExpand()"
   ></kl-breadcrumb-navigation>
   <div class="graph-container">
-    <div #graphContainer class="graph-canvas"></div>
+    <div
+      #graphContainer
+      class="graph-canvas"
+      role="img"
+      [attr.aria-label]="'Interactive graph showing kanji relationships. Use the controls below to navigate and explore. Current property type: ' + selectedPropertyType()"
+    ></div>
     <div class="graph-controls">
       <mat-form-field>
         <mat-label>Relationship</mat-label>

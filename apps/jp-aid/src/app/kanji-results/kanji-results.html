@@ -1,7 +1,17 @@
-<mat-grid-list cols="5" rowHeight="200px">
+<mat-grid-list cols="5" rowHeight="200px" role="list" aria-label="Kanji search results">
   @for (kanji of paginatedKanji(); track kanji.id) {
-    <mat-grid-tile>
-      <mat-card class="kanji-card" [ngClass]="{active: isSelected(kanji.id)}" (click)="selectKanji(kanji.id)">
+    <mat-grid-tile role="listitem">
+      <mat-card
+        class="kanji-card"
+        [ngClass]="{active: isSelected(kanji.id)}"
+        (click)="selectKanji(kanji.id)"
+        (keydown.enter)="selectKanji(kanji.id)"
+        (keydown.space)="selectKanji(kanji.id)"
+        tabindex="0"
+        role="button"
+        [attr.aria-label]="'Kanji ' + kanji.id + ', meaning: ' + kanji.meaning.join(', ') + '. Press enter to view details'"
+        [attr.aria-pressed]="isSelected(kanji.id)"
+      >
         <mat-card-header>
           <mat-card-title>{{ kanji.id }}</mat-card-title>
         </mat-card-header>

@@ -33,10 +33,20 @@ export class KanjiResults {
       return this.allKanji();
     }
 
+    // Extract unique kanji characters from search text (Unicode range: 4E00-9FFF)
+    const kanjiRegex = /[\u4E00-\u9FFF]/g;
+    const extractedKanji = [...new Set(searchText.match(kanjiRegex) || [])];
+
+    // If search text contains kanji, filter by those kanji characters
+    if (extractedKanji.length > 0) {
+      return this.allKanji().filter(kanji => extractedKanji.includes(kanji.id));
+    }
+
+    // Otherwise search by meaning or reading (for kana or English input)
+    const searchLower = searchText.toLowerCase();
     return this.allKanji().filter(
       kanji =>
-        kanji.id.includes(searchText) ||
-        kanji.meaning.some(meaning => meaning.includes(searchText)) ||
+        kanji.meaning.some(meaning => meaning.toLowerCase().includes(searchLower)) ||
         kanji.onReadings.some(reading => reading.includes(searchText)) ||
         kanji.kunReadings.some(reading => reading.includes(searchText))
     );

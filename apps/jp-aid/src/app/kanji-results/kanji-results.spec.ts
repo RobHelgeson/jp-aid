@@ -88,4 +88,76 @@ describe('KanjiResults', () => {
     // Verify the card becomes active (which indicates selection)
     expect(card.nativeElement.classList).toContain('active');
   });
+
+  describe('Filtering', () => {
+    beforeEach(() => {
+      component.allKanji.set([
+        kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
+        kanjiFixture('本', ['book', 'origin'], ['ホン'], ['もと'], 5),
+        kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた'], 14),
+        kanjiFixture('水', ['water'], ['スイ'], ['みず'], 4)
+      ]);
+    });
+
+    it('should filter by single kanji character', () => {
+      fixture.componentRef.setInput('searchText', '日');
+      fixture.detectChanges();
+
+      expect(component.paginatedKanji()).toHaveLength(1);
+      expect(component.paginatedKanji()[0].id).toBe('日');
+    });
+
+    it('should extract multiple kanji from search text', () => {
+      fixture.componentRef.setInput('searchText', '日本語');
+      fixture.detectChanges();
+
+      expect(component.paginatedKanji()).toHaveLength(3);
+      const ids = component.paginatedKanji().map(k => k.id);
+      expect(ids).toContain('日');
+      expect(ids).toContain('本');
+      expect(ids).toContain('語');
+    });
+
+    it('should filter by meaning when no kanji in search text', () => {
+      fixture.componentRef.setInput('searchText', 'water');
+      fixture.detectChanges();
+
+      expect(component.paginatedKanji()).toHaveLength(1);
+      expect(component.paginatedKanji()[0].id).toBe('水');
+    });
+
+    it('should filter by on-reading (kana)', () => {
+      fixture.componentRef.setInput('searchText', 'スイ');
+      fixture.detectChanges();
+
+      expect(component.paginatedKanji()).toHaveLength(1);
+      expect(component.paginatedKanji()[0].id).toBe('水');
+    });
+
+    it('should filter by kun-reading (kana)', () => {
+      fixture.componentRef.setInput('searchText', 'みず');
+      fixture.detectChanges();
+
+      expect(component.paginatedKanji()).toHaveLength(1);
+      expect(component.paginatedKanji()[0].id).toBe('水');
+    });
+
+    it('should return all kanji when search text is empty', () => {
+      fixture.componentRef.setInput('searchText', '');
+      fixture.detectChanges();
+
+      expect(component.paginatedKanji()).toHaveLength(4);
+    });
+
+    it('should handle mixed kanji and non-kanji search text', () => {
+      fixture.componentRef.setInput('searchText', '日本は良い');
+      fixture.detectChanges();
+
+      // Should only find the kanji that exist in mock data (日, 本)
+      expect(component.paginatedKanji()).toHaveLength(2);
+      const ids = component.paginatedKanji().map(k => k.id);
+      expect(ids).toContain('日');
+      expect(ids).toContain('本');
+    });
+  });
 });

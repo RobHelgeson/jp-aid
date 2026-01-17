@@ -1,23 +1,35 @@
-<div class="breadcrumb-container">
+<nav class="breadcrumb-container" role="navigation" aria-label="Navigation history">
   <button mat-icon-button (click)="onReset()" aria-label="Reset to origin">
     <mat-icon>home</mat-icon>
   </button>
-  @for (item of items; track item.nodeId; let last = $last) {
-    <button mat-button (click)="onBreadcrumbClick(item)" [disabled]="last">
+  @for (item of items; track item.nodeId; let last = $last; let i = $index) {
+    <button
+      mat-button
+      (click)="onBreadcrumbClick(item)"
+      [disabled]="last"
+      [attr.aria-label]="(item.type === 'kanji' ? 'Kanji ' : 'Feature ') + item.label + (last ? ' (current)' : '. Click to return to this point')"
+      [attr.aria-current]="last ? 'page' : null"
+    >
       <span [class.kanji-node]="item.type === 'kanji'">{{ item.label }}</span>
     </button>
     @if (!last) {
-      <mat-icon>chevron_right</mat-icon>
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
     }
     @if (item.property && !last) {
-      <span class="property-type">{{ item.property }}</span>
-      <mat-icon>chevron_right</mat-icon>
+      <span class="property-type" aria-label="Property type: {{ item.property }}">{{ item.property }}</span>
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
     }
   }
-</div>
+</nav>
 
 @if (items.length > 3) {
-  <button mat-button color="accent" (click)="onExpand()" class="expand-control">
+  <button
+    mat-button
+    color="accent"
+    (click)="onExpand()"
+    class="expand-control"
+    [attr.aria-label]="'Show ' + (items.length - 3) + ' more ' + (items.length - 3 > 1 ? 'nodes' : 'node') + ' in navigation history'"
+  >
     {{ items.length - 3 }} more{{ items.length - 3 > 1 ? ' nodes' : ' node' }}
   </button>
 }
