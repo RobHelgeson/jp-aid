@@ -102,7 +102,7 @@
 
       <!-- Right Column: Graph Visualization -->
       <div class="graph-column">
-        <kl-graph-visualization [kanjiId]="kanji()?.id" />
+        <kl-graph-visualization [kanjiId]="kanji()?.id" (nodeTraversed)="onNodeTraversed($event)" />
       </div>
     </div>
   } @else {

@@ -36,25 +36,33 @@ describe('BreadcrumbNavigation', () => {
   });
 
   it('should emit breadcrumbClick event when an item is clicked', () => {
-    jest.spyOn(component.breadcrumbClick, 'emit');
-    const items: BreadcrumbItem[] = [{nodeId: '1', label: 'Home', type: BreadcrumbNodeType.KANJI}];
+    const emitSpy = jest.spyOn(component.breadcrumbClick, 'emit');
+    // Need at least 2 items - first one is clickable, last one is disabled
+    const items: BreadcrumbItem[] = [
+      {nodeId: '1', label: 'Home', type: BreadcrumbNodeType.KANJI},
+      {nodeId: '2', label: 'Current', type: BreadcrumbNodeType.FEATURE}
+    ];
     component.items = items;
     fixture.detectChanges();
 
-    const breadcrumbButton = fixture.nativeElement.querySelector('button[mat-button]');
-    breadcrumbButton.click();
+    // Get all mat-button elements (excluding icon-button which is the reset button)
+    const breadcrumbButtons = fixture.nativeElement.querySelectorAll('button[mat-button]:not([mat-icon-button])');
+    // First button should not be disabled
+    expect(breadcrumbButtons[0].disabled).toBe(false);
+    breadcrumbButtons[0].click();
+    fixture.detectChanges();
 
-    expect(component.breadcrumbClick.emit).toHaveBeenCalledWith(items[0]);
+    expect(emitSpy).toHaveBeenCalledWith(items[0]);
   });
 
   it('should emit reset event when reset button is clicked', () => {
-    jest.spyOn(component.reset, 'emit');
+    jest.spyOn(component.resetNavigation, 'emit');
     fixture.detectChanges();
 
     const resetButton = fixture.nativeElement.querySelector('button[aria-label="Reset to origin"]');
     resetButton.click();
 
-    expect(component.reset.emit).toHaveBeenCalled();
+    expect(component.resetNavigation.emit).toHaveBeenCalled();
   });
 
   it('should disable the last breadcrumb item', () => {

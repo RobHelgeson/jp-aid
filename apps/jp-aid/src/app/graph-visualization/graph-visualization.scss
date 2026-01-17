@@ -50,6 +50,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
 
     mat-icon {
       font-size: 24px;

@@ -7,20 +7,25 @@ import {BreadcrumbItem} from '@jp-aid/shared-interfaces';
   selector: 'kl-breadcrumb-navigation',
   imports: [MatButtonModule, MatIconModule],
   templateUrl: './breadcrumb-navigation.html',
-  styleUrl: './breadcrumb-navigation.scss',
+  styleUrls: ['./breadcrumb-navigation.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true
 })
 export class BreadcrumbNavigation {
   @Input() items: BreadcrumbItem[] = [];
   @Output() breadcrumbClick = new EventEmitter<BreadcrumbItem>();
-  @Output() reset = new EventEmitter<void>();
+  @Output() resetNavigation = new EventEmitter<void>();
+  @Output() expandRequest = new EventEmitter<void>();
 
   onBreadcrumbClick(item: BreadcrumbItem): void {
     this.breadcrumbClick.emit(item);
   }
 
   onReset(): void {
-    this.reset.emit();
+    this.resetNavigation.emit();
+  }
+
+  onExpand(): void {
+    this.expandRequest.emit();
   }
 }

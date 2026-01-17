@@ -5,10 +5,11 @@ import {MatCardModule} from '@angular/material/card';
 import {MatChipsModule} from '@angular/material/chips';
 import {MatIconModule} from '@angular/material/icon';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ExampleWord, Kanji} from '@jp-aid/shared-interfaces';
-import {map} from 'rxjs';
+import {BreadcrumbNodeType, ExampleWord, Kanji} from '@jp-aid/shared-interfaces';
+import {filter, map, Subscription} from 'rxjs';
 
 import {GraphVisualization} from '../graph-visualization/graph-visualization';
+import {GraphService} from '../services/graph/graph.service';
 import {MockData} from '../services/mock-data.service';
 
 @Component({
@@ -22,6 +23,10 @@ export class KanjiDetail implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private router = inject(Router);
   private mockData = inject(MockData);
+  private graphService = inject(GraphService);
+
+  // Subscription to GraphService node traversal events
+  private nodeTraversalSubscription?: Subscription;
 
   private kanjiId = toSignal(this.activatedRoute.params.pipe(map(params => params['id'] || '')), {initialValue: ''});
   private searchQuery: Signal<string> = toSignal(this.activatedRoute.queryParams.pipe(map(params => params['q'] || '')), {
@@ -35,7 +40,16 @@ export class KanjiDetail implements OnInit {
     }
   });
 
-  protected kanji = computed<Kanji | null>(() => this.mockData.getKanji().find(k => k.id === this.kanjiId()) || null);
+  // Track the current node type (kanji or feature) for proper display
+  private _currentNodeType: BreadcrumbNodeType | undefined = undefined;
+
+  protected kanji = computed<Kanji | null>(() => {
+    const kanjiId = this.kanjiId();
+    if (this._currentNodeType === BreadcrumbNodeType.KANJI || !this._currentNodeType) {
+      return this.mockData.getKanji().find(k => k.id === kanjiId) || null;
+    }
+    return null; // For feature nodes, don't show kanji details
+  });
 
   protected exampleWords = computed<ExampleWord[]>(() => this.mockData.getExampleWords(this.kanji()?.id || ''));
 
@@ -51,6 +65,15 @@ export class KanjiDetail implements OnInit {
 
     if (currentKanjiId) {
       this.mockData.setSearchResults(simulatedSearchResults, currentKanjiId);
+
+      // Set up subscription to GraphService node traversal events
+      this.nodeTraversalSubscription = this.graphService.nodeTraversed
+        .pipe(
+          filter(event => !!event.type) // Only handle events with valid types
+        )
+        .subscribe(event => {
+          this.onNodeTraversed(event);
+        });
     }
   }
 
@@ -72,6 +95,28 @@ export class KanjiDetail implements OnInit {
     const nextKanji = this.mockData.getNextKanji();
     if (nextKanji) {
       this.router.navigate(['/kanji', nextKanji.id], {queryParams: {q: this.searchQuery()}});
+    }
+  }
+
+  /**
+   * Handle node traversal events from the graph visualization or GraphService
+   * @param event Node traversal event with ID and type
+   */
+  onNodeTraversed(event: {nodeId: string; type: BreadcrumbNodeType | undefined}): void {
+    const {nodeId, type} = event;
+    // Update the current node type
+    this._currentNodeType = type;
+
+    // Update the current kanji based on traversal
+    if (this._currentNodeType === BreadcrumbNodeType.KANJI) {
+      this.router.navigate(['/kanji', nodeId], {queryParams: {q: this.searchQuery()}});
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription when component is destroyed
+    if (this.nodeTraversalSubscription) {
+      this.nodeTraversalSubscription.unsubscribe();
     }
   }
 

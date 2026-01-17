@@ -16,12 +16,14 @@
 }
 
 .property-type {
-  font-style: italic;
-  color: #666;
+  font-size: 0.85rem;
+  color: var(--secondary-text);
   margin: 0 4px;
 }
 
-button {
+button.mat-button {
+  text-transform: none; /* Preserve original case */
+  font-weight: 500;
   min-width: auto;
   padding: 0 4px;
 }

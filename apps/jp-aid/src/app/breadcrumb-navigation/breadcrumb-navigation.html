@@ -15,3 +15,9 @@
     }
   }
 </div>
+
+@if (items.length > 3) {
+  <button mat-button color="accent" (click)="onExpand()" class="expand-control">
+    {{ items.length - 3 }} more{{ items.length - 3 > 1 ? ' nodes' : ' node' }}
+  </button>
+}

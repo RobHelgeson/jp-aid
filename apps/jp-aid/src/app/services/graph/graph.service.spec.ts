@@ -144,7 +144,8 @@ describe('GraphService', () => {
       {nodeId: '日', property: PropertyType.ON_YOMI}
     ]);
     service.navigateToState('語');
-    expect(service.getHistory().length).toBe(1);
+    // navigateToState sets history to include target state (1 entry), then updateGraph adds another entry (2 total)
+    expect(service.getHistory().length).toBe(2);
     expect(updateGraphSpy).toHaveBeenCalledWith('語', PropertyType.ON_YOMI);
   });
 

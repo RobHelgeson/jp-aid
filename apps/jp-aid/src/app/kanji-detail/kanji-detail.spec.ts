@@ -72,8 +72,14 @@ describe('KanjiDetail', () => {
       nodeClicked: signal(null),
       resetToOrigin: jest.fn(),
       navigateToState: jest.fn(),
+      navigateBack: jest.fn(),
+      navigateForward: jest.fn(),
+      canNavigateBack: jest.fn().mockReturnValue(false),
+      canNavigateForward: jest.fn().mockReturnValue(false),
       getHistory: jest.fn().mockReturnValue([]),
       getNodeAttribute: jest.fn(),
+      handleNodeTraversal: jest.fn(),
+      nodeTraversed: {pipe: jest.fn().mockReturnValue({subscribe: jest.fn()})}
     };
 
     // Setup mock data

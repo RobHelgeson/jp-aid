@@ -2,33 +2,33 @@
   <kl-breadcrumb-navigation
     [items]="breadcrumbItems()"
     (breadcrumbClick)="onBreadcrumbClick($event)"
-    (reset)="onReset()"
+    (resetNavigation)="onResetNavigation()"
+    (expandRequest)="onExpand()"
   ></kl-breadcrumb-navigation>
   <div class="graph-container">
     <div #graphContainer class="graph-canvas"></div>
     <div class="graph-controls">
       <mat-form-field>
         <mat-label>Relationship</mat-label>
-        <mat-select
-          [value]="selectedPropertyType()"
-          (selectionChange)="onPropertyTypeChange($event.value)"
-        >
+        <mat-select [value]="selectedPropertyType()" (selectionChange)="onPropertyTypeChange($event.value)" [disabled]="isLoading()">
           @for (property of propertyTypes; track property) {
-          <mat-option [value]="property">{{ property }}</mat-option>
+            <mat-option [value]="property">{{ property }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
-      <button mat-icon-button (click)="zoomIn()" aria-label="Zoom In">
+      <button mat-icon-button (click)="navigateBack()" [disabled]="!canNavigateBack() || isLoading()" aria-label="Navigate Back">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <button mat-icon-button (click)="navigateForward()" [disabled]="!canNavigateForward() || isLoading()" aria-label="Navigate Forward">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+      <button mat-icon-button (click)="zoomIn()" [disabled]="isLoading()" aria-label="Zoom In">
         <mat-icon>zoom_in</mat-icon>
       </button>
-      <button mat-icon-button (click)="zoomOut()" aria-label="Zoom Out">
+      <button mat-icon-button (click)="zoomOut()" [disabled]="isLoading()" aria-label="Zoom Out">
         <mat-icon>zoom_out</mat-icon>
       </button>
-      <button
-        mat-icon-button
-        (click)="resetGraph()"
-        aria-label="Reset Graph View"
-      >
+      <button mat-icon-button (click)="resetGraph()" [disabled]="isLoading()" aria-label="Reset Graph View">
         <mat-icon>center_focus_strong</mat-icon>
       </button>
     </div>

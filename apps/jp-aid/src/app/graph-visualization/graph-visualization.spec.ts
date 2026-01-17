@@ -21,13 +21,18 @@ describe('GraphVisualization', () => {
       updateGraph: jest.fn(),
       resetToOrigin: jest.fn(),
       navigateToState: jest.fn(),
+      navigateBack: jest.fn(),
+      navigateForward: jest.fn(),
+      canNavigateBack: jest.fn().mockReturnValue(false),
+      canNavigateForward: jest.fn().mockReturnValue(false),
       getHistory: jest.fn().mockReturnValue([]),
       getNodeAttribute: jest.fn(),
       zoomIn: jest.fn(),
       zoomOut: jest.fn(),
       resetGraph: jest.fn(),
       destroy: jest.fn(),
-      nodeClicked: signal(null)
+      nodeClicked: signal(null),
+      handleNodeTraversal: jest.fn()
     };
 
     await TestBed.configureTestingModule({
@@ -48,16 +53,19 @@ describe('GraphVisualization', () => {
     fixture.detectChanges();
     component.ngAfterViewInit();
     expect(mockGraphService.initialize).toHaveBeenCalledWith(component.graphContainer.nativeElement);
-    expect(mockGraphService.resetToOrigin).toHaveBeenCalledWith('語', PropertyType.ON_YOMI);
+    // The component calls updateGraph (via updateGraphAndBreadcrumbs), not resetToOrigin directly
+    expect(mockGraphService.updateGraph).toHaveBeenCalledWith('語', PropertyType.ON_YOMI);
   });
 
   it('should change property type and update graph', () => {
     fixture.componentRef.setInput('kanjiId', '語');
     fixture.detectChanges();
+    jest.clearAllMocks();
     component.onPropertyTypeChange(PropertyType.RADICAL);
     fixture.detectChanges();
     expect(component.selectedPropertyType()).toBe(PropertyType.RADICAL);
-    expect(mockGraphService.resetToOrigin).toHaveBeenCalledWith('語', PropertyType.RADICAL);
+    // The component calls updateGraphAndBreadcrumbs which calls updateGraph
+    expect(mockGraphService.updateGraph).toHaveBeenCalledWith('語', PropertyType.RADICAL);
   });
 
   it('should handle breadcrumb click', () => {
@@ -73,7 +81,7 @@ describe('GraphVisualization', () => {
   it('should handle reset', () => {
     fixture.componentRef.setInput('kanjiId', '語');
     fixture.detectChanges();
-    component.onReset();
+    component.onResetNavigation();
     expect(mockGraphService.resetToOrigin).toHaveBeenCalledWith('語', PropertyType.ON_YOMI);
   });
 });
