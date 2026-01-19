@@ -15,6 +15,129 @@ describe('MockData', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('getKanjiByIds', () => {
+    it('should return empty array for empty ids array', () => {
+      expect(service.getKanjiByIds([])).toEqual([]);
+    });
+
+    it('should return empty array for null/undefined input', () => {
+      expect(service.getKanjiByIds(null as unknown as string[])).toEqual([]);
+      expect(service.getKanjiByIds(undefined as unknown as string[])).toEqual([]);
+    });
+
+    it('should return matching kanji for valid ids', () => {
+      const result = service.getKanjiByIds(['日', '本']);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('日');
+      expect(result[1].id).toBe('本');
+    });
+
+    it('should preserve order of input ids', () => {
+      const result = service.getKanjiByIds(['本', '日', '語']);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe('本');
+      expect(result[1].id).toBe('日');
+      expect(result[2].id).toBe('語');
+    });
+
+    it('should filter out non-existent kanji ids', () => {
+      const result = service.getKanjiByIds(['日', 'nonexistent', '本']);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('日');
+      expect(result[1].id).toBe('本');
+    });
+
+    it('should return empty array when no ids match', () => {
+      const result = service.getKanjiByIds(['a', 'b', 'c']);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return all kanji when all ids match', () => {
+      const allKanjiIds = service.getKanji().map(k => k.id);
+      const result = service.getKanjiByIds(allKanjiIds);
+
+      expect(result).toHaveLength(allKanjiIds.length);
+    });
+
+    it('should return single kanji for single id', () => {
+      const result = service.getKanjiByIds(['水']);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('水');
+      expect(result[0].meaning).toContain('water');
+    });
+  });
+
+  describe('Order Preservation (Story 2.6 verification)', () => {
+    it('should preserve order for typical search "日本語"', () => {
+      const result = service.getKanjiByIds(['日', '本', '語']);
+
+      expect(result).toHaveLength(3);
+      expect(result.map(k => k.id)).toEqual(['日', '本', '語']);
+    });
+
+    it('should preserve order for reversed search "語本日"', () => {
+      const result = service.getKanjiByIds(['語', '本', '日']);
+
+      expect(result).toHaveLength(3);
+      expect(result.map(k => k.id)).toEqual(['語', '本', '日']);
+    });
+
+    it('should preserve order when some kanji are not in database', () => {
+      const result = service.getKanjiByIds(['日', '漢', '本', '字', '語']);
+
+      expect(result).toHaveLength(3);
+      expect(result.map(k => k.id)).toEqual(['日', '本', '語']);
+    });
+
+    it('should preserve order through setSearchResults and navigation', () => {
+      const kanjiList = [
+        kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
+        kanjiFixture('本', ['book', 'origin'], ['ホン'], ['もと'], 5),
+        kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた'], 14)
+      ];
+
+      service.setSearchResults(kanjiList, '語');
+
+      const results = service.getSearchResults();
+      expect(results.map(k => k.id)).toEqual(['日', '本', '語']);
+      expect(service.getCurrentKanjiIndex()).toBe(2);
+
+      const prev1 = service.getPreviousKanji();
+      expect(prev1?.id).toBe('本');
+
+      service.updateCurrentKanji('本');
+      const prev2 = service.getPreviousKanji();
+      expect(prev2?.id).toBe('日');
+
+      service.updateCurrentKanji('日');
+      const next = service.getNextKanji();
+      expect(next?.id).toBe('本');
+    });
+
+    it('should maintain consistent order when accessing results multiple times', () => {
+      const kanjiList = [
+        kanjiFixture('日', ['day'], [], [], 4),
+        kanjiFixture('本', ['book'], [], [], 5),
+        kanjiFixture('語', ['word'], [], [], 14)
+      ];
+
+      service.setSearchResults(kanjiList, '日');
+
+      const results1 = service.getSearchResults();
+      const results2 = service.getSearchResults();
+      const results3 = service.getSearchResults();
+
+      expect(results1.map(k => k.id)).toEqual(results2.map(k => k.id));
+      expect(results2.map(k => k.id)).toEqual(results3.map(k => k.id));
+      expect(results1.map(k => k.id)).toEqual(['日', '本', '語']);
+    });
+  });
+
   describe('getExampleWords', () => {
     it('should return example words for known kanji', () => {
       const exampleWords = service.getExampleWords('水');

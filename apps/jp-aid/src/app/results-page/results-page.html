@@ -12,17 +12,80 @@
         </button>
       </header>
 
-      <!-- Kanji Results -->
-      @if (hasResults()) {
-        <section class="results-section" aria-label="Found kanji">
-          <kl-kanji-results [searchText]="searchQuery()" />
-        </section>
-      } @else {
-        <!-- No Results -->
-        <section class="no-results" role="status" aria-live="polite">
-          <p>No kanji found for your search.</p>
-          <button mat-raised-button color="primary" (click)="goBackToSearch()" aria-label="Try another search">Try Another Search</button>
-        </section>
+      <!-- Kanji Results based on search status -->
+      @switch (searchStatus()) {
+        @case ('found') {
+          @if (displayMode() === 'grouped') {
+            <section class="results-section grouped-results" aria-label="Kanji by segment">
+              @for (segment of segmentedResult()?.segments; track segment.segmentIndex) {
+                @if (segment.kanji.length > 0) {
+                  <div class="segment-group" role="group" [attr.aria-label]="'Segment ' + (segment.segmentIndex + 1)">
+                    <header class="segment-header">
+                      <span class="segment-text" [attr.title]="segment.text">{{ segment.text }}</span>
+                      <span class="segment-count">{{ segment.kanji.length }} kanji</span>
+                    </header>
+                    <div class="segment-content">
+                      <kl-kanji-results [searchText]="segment.kanji.join('')" />
+                    </div>
+                  </div>
+                }
+              }
+            </section>
+          } @else {
+            <section class="results-section" aria-label="Found kanji">
+              <kl-kanji-results [searchText]="searchQuery()" />
+            </section>
+          }
+        }
+        @case ('partial_match') {
+          <div class="partial-match-notice" role="status" aria-live="polite">
+            <mat-icon aria-hidden="true">info</mat-icon>
+            <span>Found {{ foundKanjiCount() }} of {{ extractedKanji().length }} kanji. Not in database: {{ missingKanji().join(', ') }}</span>
+          </div>
+          @if (displayMode() === 'grouped') {
+            <section class="results-section grouped-results" aria-label="Kanji by segment">
+              @for (segment of segmentedResult()?.segments; track segment.segmentIndex) {
+                @if (segment.kanji.length > 0) {
+                  <div class="segment-group" role="group" [attr.aria-label]="'Segment ' + (segment.segmentIndex + 1)">
+                    <header class="segment-header">
+                      <span class="segment-text" [attr.title]="segment.text">{{ segment.text }}</span>
+                      <span class="segment-count">{{ segment.kanji.length }} kanji</span>
+                    </header>
+                    <div class="segment-content">
+                      <kl-kanji-results [searchText]="segment.kanji.join('')" />
+                    </div>
+                  </div>
+                }
+              }
+            </section>
+          } @else {
+            <section class="results-section" aria-label="Found kanji">
+              <kl-kanji-results [searchText]="searchQuery()" />
+            </section>
+          }
+        }
+        @case ('no_kanji_in_input') {
+          <section class="no-results info-state" role="status" aria-live="polite">
+            <mat-icon class="status-icon" aria-hidden="true">translate</mat-icon>
+            <h2>No Kanji Found</h2>
+            <p>No kanji characters found in your input.</p>
+            <p class="suggestion">Try entering Japanese text containing kanji, or search by meaning or reading.</p>
+            <button mat-raised-button color="primary" (click)="goBackToSearch()" aria-label="Try another search">
+              Try Another Search
+            </button>
+          </section>
+        }
+        @case ('kanji_not_in_database') {
+          <section class="no-results warning-state" role="status" aria-live="polite">
+            <mat-icon class="status-icon" aria-hidden="true">search_off</mat-icon>
+            <h2>Kanji Not Available</h2>
+            <p>The kanji you entered ({{ extractedKanji().join(', ') }}) are not yet in our database.</p>
+            <p class="suggestion">Try different kanji or check back later as we expand our collection.</p>
+            <button mat-raised-button color="primary" (click)="goBackToSearch()" aria-label="Try another search">
+              Try Another Search
+            </button>
+          </section>
+        }
       }
     </div>
   }

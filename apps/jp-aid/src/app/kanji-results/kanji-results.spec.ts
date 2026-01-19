@@ -5,33 +5,41 @@ import {Router} from '@angular/router';
 import {kanjiFixture} from '@jp-aid/shared-interfaces/testing';
 
 import {MockData} from '../services/mock-data.service';
+import {TextParsingService} from '../services/text-parsing/text-parsing.service';
 import {KanjiResults} from './kanji-results';
 
 describe('KanjiResults', () => {
   let component: KanjiResults;
   let fixture: ComponentFixture<KanjiResults>;
   let mockRouter: {navigate: jest.Mock};
-  let mockData: {getKanji: jest.Mock};
+  let mockData: {getKanji: jest.Mock; getKanjiByIds: jest.Mock; setSearchResults: jest.Mock};
 
   beforeEach(async () => {
     mockRouter = {
       navigate: jest.fn()
     };
     mockData = {
-      getKanji: jest.fn()
+      getKanji: jest.fn(),
+      getKanjiByIds: jest.fn(),
+      setSearchResults: jest.fn()
     };
 
     // Setup default mock data
-    mockData.getKanji.mockReturnValue([
+    const defaultKanji = [
       kanjiFixture('水', ['water'], ['スイ'], ['みず'], 4),
       kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4)
-    ]);
+    ];
+    mockData.getKanji.mockReturnValue(defaultKanji);
+    mockData.getKanjiByIds.mockImplementation((ids: string[]) =>
+      defaultKanji.filter(k => ids.includes(k.id))
+    );
 
     await TestBed.configureTestingModule({
       imports: [KanjiResults, NoopAnimationsModule],
       providers: [
         {provide: Router, useValue: mockRouter},
-        {provide: MockData, useValue: mockData}
+        {provide: MockData, useValue: mockData},
+        TextParsingService
       ]
     }).compileComponents();
 
@@ -89,14 +97,111 @@ describe('KanjiResults', () => {
     expect(card.nativeElement.classList).toContain('active');
   });
 
-  describe('Filtering', () => {
+  it('should call setSearchResults with ordered kanji when navigating to detail', () => {
+    const testKanji = [
+      kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
+      kanjiFixture('本', ['book', 'origin'], ['ホン'], ['もと'], 5),
+      kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた'], 14)
+    ];
+    mockData.getKanjiByIds.mockImplementation((ids: string[]) =>
+      testKanji.filter(k => ids.includes(k.id))
+    );
+    component.allKanji.set(testKanji);
+
+    fixture.componentRef.setInput('searchText', '日本語');
+    fixture.detectChanges();
+
+    const cards = fixture.debugElement.queryAll(By.css('mat-card'));
+    cards[1].nativeElement.click();
+    fixture.detectChanges();
+
+    expect(mockData.setSearchResults).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({id: '日'}),
+        expect.objectContaining({id: '本'}),
+        expect.objectContaining({id: '語'})
+      ]),
+      '本'
+    );
+    const callArgs = mockData.setSearchResults.mock.calls[0];
+    expect(callArgs[0].map((k: {id: string}) => k.id)).toEqual(['日', '本', '語']);
+  });
+
+  describe('Order Preservation (Story 2.6 verification)', () => {
+    const testKanji = [
+      kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
+      kanjiFixture('本', ['book', 'origin'], ['ホン'], ['もと'], 5),
+      kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた'], 14),
+      kanjiFixture('水', ['water'], ['スイ'], ['みず'], 4)
+    ];
+
     beforeEach(() => {
-      component.allKanji.set([
-        kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
-        kanjiFixture('本', ['book', 'origin'], ['ホン'], ['もと'], 5),
-        kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた'], 14),
-        kanjiFixture('水', ['water'], ['スイ'], ['みず'], 4)
-      ]);
+      mockData.getKanjiByIds.mockImplementation((ids: string[]) => {
+        const kanjiMap = new Map(testKanji.map(k => [k.id, k]));
+        return ids.map(id => kanjiMap.get(id)).filter((k): k is typeof testKanji[0] => k !== undefined);
+      });
+      component.allKanji.set(testKanji);
+    });
+
+    it('should preserve order for "日本語" search - kanji should appear in extraction order', () => {
+      fixture.componentRef.setInput('searchText', '日本語');
+      fixture.detectChanges();
+
+      const ids = component.paginatedKanji().map(k => k.id);
+      expect(ids).toEqual(['日', '本', '語']);
+    });
+
+    it('should preserve order for "語本日" search - reversed extraction order', () => {
+      fixture.componentRef.setInput('searchText', '語本日');
+      fixture.detectChanges();
+
+      const ids = component.paginatedKanji().map(k => k.id);
+      expect(ids).toEqual(['語', '本', '日']);
+    });
+
+    it('should preserve order when mixed with hiragana "日がある本がある語"', () => {
+      fixture.componentRef.setInput('searchText', '日がある本がある語');
+      fixture.detectChanges();
+
+      const ids = component.paginatedKanji().map(k => k.id);
+      expect(ids).toEqual(['日', '本', '語']);
+    });
+
+    it('should pass ordered kanji array to setSearchResults when selecting', () => {
+      fixture.componentRef.setInput('searchText', '日本語');
+      fixture.detectChanges();
+
+      const cards = fixture.debugElement.queryAll(By.css('mat-card'));
+      cards[1].nativeElement.click();
+      fixture.detectChanges();
+
+      const callArgs = mockData.setSearchResults.mock.calls[0];
+      expect(callArgs[0].map((k: {id: string}) => k.id)).toEqual(['日', '本', '語']);
+      expect(callArgs[1]).toBe('本');
+    });
+
+    it('should preserve order for multi-kanji search with repeated characters', () => {
+      fixture.componentRef.setInput('searchText', '日日本本語');
+      fixture.detectChanges();
+
+      const ids = component.paginatedKanji().map(k => k.id);
+      expect(ids).toEqual(['日', '本', '語']);
+    });
+  });
+
+  describe('Filtering', () => {
+    const testKanji = [
+      kanjiFixture('日', ['day', 'sun'], ['ニチ', 'ジツ'], ['ひ', 'か'], 4),
+      kanjiFixture('本', ['book', 'origin'], ['ホン'], ['もと'], 5),
+      kanjiFixture('語', ['word', 'language'], ['ゴ'], ['かた'], 14),
+      kanjiFixture('水', ['water'], ['スイ'], ['みず'], 4)
+    ];
+
+    beforeEach(() => {
+      mockData.getKanjiByIds.mockImplementation((ids: string[]) =>
+        testKanji.filter(k => ids.includes(k.id))
+      );
+      component.allKanji.set(testKanji);
     });
 
     it('should filter by single kanji character', () => {
@@ -153,7 +258,6 @@ describe('KanjiResults', () => {
       fixture.componentRef.setInput('searchText', '日本は良い');
       fixture.detectChanges();
 
-      // Should only find the kanji that exist in mock data (日, 本)
       expect(component.paginatedKanji()).toHaveLength(2);
       const ids = component.paginatedKanji().map(k => k.id);
       expect(ids).toContain('日');

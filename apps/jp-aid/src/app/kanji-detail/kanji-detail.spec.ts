@@ -30,6 +30,7 @@ describe('KanjiDetail', () => {
     getGraphData: jest.Mock;
     getExampleWords: jest.Mock;
     setSearchResults: jest.Mock;
+    getSearchResults: jest.Mock;
     updateCurrentKanji: jest.Mock;
     getPreviousKanji: jest.Mock;
     getNextKanji: jest.Mock;
@@ -56,6 +57,7 @@ describe('KanjiDetail', () => {
       getGraphData: jest.fn(),
       getExampleWords: jest.fn(),
       setSearchResults: jest.fn(),
+      getSearchResults: jest.fn(),
       updateCurrentKanji: jest.fn(),
       getPreviousKanji: jest.fn(),
       getNextKanji: jest.fn(),
@@ -174,6 +176,7 @@ describe('KanjiDetail', () => {
     mockData.getNextKanji.mockReturnValue(kanjiFixture('火', ['fire'], ['カ'], ['ひ'], 4));
     mockData.hasPreviousKanji.mockReturnValue(true);
     mockData.hasNextKanji.mockReturnValue(true);
+    mockData.getSearchResults.mockReturnValue([]);
 
     await TestBed.configureTestingModule({
       imports: [KanjiDetail, NoopAnimationsModule],
@@ -286,7 +289,6 @@ describe('KanjiDetail', () => {
 
       // Create a fresh component instance with updated mocks
       const freshFixture = TestBed.createComponent(KanjiDetail);
-      const freshComponent = freshFixture.componentInstance;
       freshFixture.detectChanges();
 
       const previousButton = freshFixture.nativeElement.querySelector('button[aria-label="Previous kanji"]');
@@ -300,7 +302,6 @@ describe('KanjiDetail', () => {
 
       // Create a fresh component instance with updated mocks
       const freshFixture = TestBed.createComponent(KanjiDetail);
-      const freshComponent = freshFixture.componentInstance;
       freshFixture.detectChanges();
 
       const nextButton = freshFixture.nativeElement.querySelector('button[aria-label="Next kanji"]');
@@ -363,8 +364,28 @@ describe('KanjiDetail', () => {
       expect(mockData.updateCurrentKanji).toHaveBeenCalledWith('火');
     });
 
-    it('should initialize search results on component load', () => {
-      expect(mockData.setSearchResults).toHaveBeenCalled();
+    it('should initialize search results on component load when no existing context', () => {
+      // With no existing search results, should set minimal context with current kanji
+      expect(mockData.getSearchResults).toHaveBeenCalled();
+      expect(mockData.setSearchResults).toHaveBeenCalledWith(
+        [expect.objectContaining({id: '水'})],
+        '水'
+      );
+    });
+
+    it('should not override existing search results when navigated from KanjiResults', () => {
+      // Reset mocks and create new component with existing search results
+      mockData.setSearchResults.mockClear();
+      mockData.getSearchResults.mockReturnValue([
+        kanjiFixture('日', ['day'], [], [], 4),
+        kanjiFixture('本', ['book'], [], [], 5),
+        kanjiFixture('水', ['water'], [], [], 4)
+      ]);
+
+      const freshFixture = TestBed.createComponent(KanjiDetail);
+      freshFixture.detectChanges();
+
+      expect(mockData.setSearchResults).not.toHaveBeenCalled();
     });
   });
 

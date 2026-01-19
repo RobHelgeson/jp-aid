@@ -54,6 +54,23 @@ export class MockData {
     kanjiFixture('土', ['earth', 'soil'], ['ド', 'ト'], ['���ち'], 3)
   ];
 
+  /**
+   * Get kanji by their IDs (characters)
+   * Returns kanji in the same order as the input IDs array
+   * @param ids Array of kanji character IDs to retrieve
+   * @returns Array of matching Kanji objects in the order specified by ids
+   */
+  getKanjiByIds = (ids: string[]): Kanji[] => {
+    if (!ids || ids.length === 0) {
+      return [];
+    }
+
+    const allKanji = this.getKanji();
+    const kanjiMap = new Map(allKanji.map(k => [k.id, k]));
+
+    return ids.map(id => kanjiMap.get(id)).filter((k): k is Kanji => k !== undefined);
+  };
+
   getGraphData = (kanjiId: string, property: PropertyType): {nodes: GraphNode[]; edges: GraphEdge[]} => {
     const nodes: GraphNode[] = [];
     const edges: GraphEdge[] = [];
@@ -79,14 +96,15 @@ export class MockData {
     nodes.push(kanjiNode);
 
     switch (property) {
-      case PropertyType.RADICAL:
+      case PropertyType.RADICAL: {
         const radical1: RadicalNode = radicalNodeFixture('言', '言', -1, 1, 10, NODE_COLORS[NodeType.Radical], NodeType.Radical, 7, [
           'speech'
         ]);
         nodes.push(radical1);
         edges.push(graphEdgeFixture(kanji.id, radical1.id, 2, EDGE_COLORS['has radical'], 'has radical'));
         break;
-      case PropertyType.PRIMITIVE:
+      }
+      case PropertyType.PRIMITIVE: {
         const primitive1: PrimitiveNode = primitiveNodeFixture(
           '五',
           '五',
@@ -100,6 +118,7 @@ export class MockData {
         nodes.push(primitive1);
         edges.push(graphEdgeFixture(kanji.id, primitive1.id, 2, EDGE_COLORS['has primitive'], 'has primitive'));
         break;
+      }
       case PropertyType.ON_YOMI:
         kanji.onReadings.forEach((reading, i) => {
           const readingNode = primitiveNodeFixture(

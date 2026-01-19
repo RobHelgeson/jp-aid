@@ -7,6 +7,7 @@ import {Router} from '@angular/router';
 import {Kanji} from '@jp-aid/shared-interfaces';
 
 import {MockData} from '../services/mock-data.service';
+import {TextParsingService} from '../services/text-parsing/text-parsing.service';
 
 @Component({
   selector: 'kl-kanji-results',
@@ -18,6 +19,7 @@ import {MockData} from '../services/mock-data.service';
 })
 export class KanjiResults {
   private mockData = inject(MockData);
+  private textParsingService = inject(TextParsingService);
   private router = inject(Router);
 
   readonly searchText = input<string>('');
@@ -33,16 +35,12 @@ export class KanjiResults {
       return this.allKanji();
     }
 
-    // Extract unique kanji characters from search text (Unicode range: 4E00-9FFF)
-    const kanjiRegex = /[\u4E00-\u9FFF]/g;
-    const extractedKanji = [...new Set(searchText.match(kanjiRegex) || [])];
+    const extractedKanji = this.textParsingService.extractKanji(searchText);
 
-    // If search text contains kanji, filter by those kanji characters
     if (extractedKanji.length > 0) {
-      return this.allKanji().filter(kanji => extractedKanji.includes(kanji.id));
+      return this.mockData.getKanjiByIds(extractedKanji);
     }
 
-    // Otherwise search by meaning or reading (for kana or English input)
     const searchLower = searchText.toLowerCase();
     return this.allKanji().filter(
       kanji =>
@@ -70,6 +68,7 @@ export class KanjiResults {
 
   protected selectKanji(kanjiId: string): void {
     this.selectedKanjiId.set(kanjiId);
+    this.mockData.setSearchResults(this.filteredKanji(), kanjiId);
     this.router.navigate(['/kanji', kanjiId], {queryParams: {q: this.searchText()}});
   }
 

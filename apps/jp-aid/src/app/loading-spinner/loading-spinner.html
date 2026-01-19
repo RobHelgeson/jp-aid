@@ -1,6 +1,6 @@
-<div class="spinner-container" [@spinnerSlideUp]>
+<div class="spinner-container" [@spinnerSlideUp] role="status" aria-live="polite" aria-label="Loading">
   <div class="spinner-content">
-    <mat-spinner [diameter]="size()" />
+    <mat-spinner [diameter]="size()" aria-hidden="true" />
     <p>{{ message() }}</p>
   </div>
 </div>

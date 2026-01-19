@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, Signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, Signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
@@ -19,7 +19,7 @@ import {MockData} from '../services/mock-data.service';
   styleUrl: './kanji-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class KanjiDetail implements OnInit {
+export class KanjiDetail implements OnInit, OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
   private router = inject(Router);
   private mockData = inject(MockData);
@@ -58,13 +58,19 @@ export class KanjiDetail implements OnInit {
   protected nextKanji = computed<Kanji | null>(() => this.mockData.getNextKanji());
 
   ngOnInit(): void {
-    // Initialize search results context with a subset of kanji to simulate search results
-    const allKanji = this.mockData.getKanji();
-    const simulatedSearchResults = allKanji.slice(0, 10); // First 10 kanji as search results
     const currentKanjiId = this.kanjiId();
 
     if (currentKanjiId) {
-      this.mockData.setSearchResults(simulatedSearchResults, currentKanjiId);
+      // Only set search results if accessed directly without context from KanjiResults
+      // When navigating from KanjiResults, setSearchResults is called there with the actual ordered results
+      const existingResults = this.mockData.getSearchResults();
+      if (existingResults.length === 0) {
+        // Direct URL access - create minimal context with just this kanji
+        const currentKanji = this.mockData.getKanji().find(k => k.id === currentKanjiId);
+        if (currentKanji) {
+          this.mockData.setSearchResults([currentKanji], currentKanjiId);
+        }
+      }
 
       // Set up subscription to GraphService node traversal events
       this.nodeTraversalSubscription = this.graphService.nodeTraversed
